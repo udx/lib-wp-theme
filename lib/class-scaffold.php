@@ -92,6 +92,46 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
+       * Handle Script Rewrites.
+       *
+       * @param array $options
+       */
+      public function scripts( $options = array() ) {
+
+        foreach( (array) $options as $name => $settings ) {
+          die( '<pre>' . print_r( $settings, true ) . '</pre>' );
+          die($name);
+        }
+
+
+      }
+
+      public function manage( $options = array() ) {
+
+        //$settings->set( 'pages.manage', add_dashboard_page( __( 'Manage', HDDP ), __( 'Manage', HDDP ), $hddp[ 'manage_options' ], 'hddp_manage', array( 'UsabilityDynamics\Disco', 'hddp_manage' ) ) );
+
+      }
+
+        /**
+       * Handle Style Rewrites.
+       *
+       * @param array $options
+       */
+      public function styles( $options = array() ) {
+
+
+      }
+
+      /**
+       * Configures API/RPC Methods.
+       *
+       * @param array $options
+       */
+      public function api( $options = array() ) {
+
+      }
+
+      /**
        * Define Dynamic Public Assets
        *
        * @param $options
@@ -142,20 +182,15 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
-       * Configures API/RPC Methods.
-       *
-       * @param array $options
-       */
-      public function api( $options = array() ) {
-
-      }
-
-      /**
        * Declare Data Structure.
        *
        * @param array $options
        */
       public function structure( $options = array() ) {
+
+        // Add Metabox Options.
+        //\Flawless\Management::add_post_type_option( array( 'post_type' => $type, 'type' => $vars[ 'admin_type' ], 'position' => $x++, 'meta_key' => $slug, 'label' => $vars[ 'admin_label' ], 'placeholder' => $vars[ 'placeholder' ], ));
+
 
       }
 

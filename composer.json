@@ -7,7 +7,6 @@
     "name": "Usability Dynamics",
     "url": "http://UsabilityDynamics.com"
   },
-  "license": "GPL-2.0",
   "repositories": [
     {
       "type": "composer",
@@ -16,11 +15,16 @@
   ],
   "minimum-stability": "dev",
   "require": {
-    "UsabilityDynamics/lib-ui": "master",
+    "UsabilityDynamics/lib-api": "master",
+    "UsabilityDynamics/lib-model": "master",
+    "UsabilityDynamics/lib-requires": "master",
     "UsabilityDynamics/lib-settings": "master",
+    "UsabilityDynamics/lib-ui": "master",
+    "UsabilityDynamics/lib-wp-rpc": "master",
     "UsabilityDynamics/wp-meta-box": "master"
   },
   "autoload": {
     "classmap": [ "lib" ]
-  }
+  },
+  "license": "GPL-2.0"
 }
