@@ -77,7 +77,7 @@ namespace UsabilityDynamics\Theme {
           'version' => $this->version
         ));
 
-        $this->settings = new Settings( $args );
+        $this->settings = Settings::define( $args );
 
       }
 
