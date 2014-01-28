@@ -73,14 +73,11 @@ namespace UsabilityDynamics\Theme {
       public function settings( $args = array() ) {
 
         $args = Utility::defaults( $args, array(
-
+          'id' => $this->id,
+          'version' => $this->version
         ));
 
-        Settings::test();
-
         $this->settings = new Settings( $args );
-
-        die( '<pre>' . print_r( $this->settings , true ) . '</pre>' );
 
       }
 
@@ -90,7 +87,6 @@ namespace UsabilityDynamics\Theme {
        * @param array $options
        */
       public function rewrites( $options = array() ) {
-
 
 
       }
@@ -179,6 +175,10 @@ namespace UsabilityDynamics\Theme {
        */
       public function customizer( $options = array() ) {
 
+        foreach( (array) $options as $key => $config ) {
+          // add_theme_support( $key );
+        }
+
       }
 
       /**
@@ -201,7 +201,15 @@ namespace UsabilityDynamics\Theme {
        */
       public function media( $options = array() ) {
 
-        // add_image_size( 'hd_large', 890, 500, true );
+        foreach( (array) $options as $name => $settings ) {
+          add_image_size( $name,
+            $settings[ 'width' ],
+            isset( $settings[ 'height' ] ) ? $settings[ 'height' ] : 9999,
+            isset( $settings[ 'crop' ] ) ? $settings[ 'crop' ] : false
+          );
+        }
+
+        return $options;
 
       }
 
@@ -211,8 +219,8 @@ namespace UsabilityDynamics\Theme {
        * @param $key
        * @param $value
        */
-      public function set( $key, $value ) {
-
+      public function set( $key = null, $value = null ) {
+        return $this->settings->set( $key, $value );
       }
 
       /**
@@ -221,8 +229,8 @@ namespace UsabilityDynamics\Theme {
        * @param $key
        * @param $default
        */
-      public function get( $key, $default ) {
-
+      public function get( $key = null, $default = null ) {
+        return $this->settings->get( $key, $default );
       }
 
       /**

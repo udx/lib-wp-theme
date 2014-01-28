@@ -20,9 +20,9 @@ namespace UsabilityDynamics\Theme {
      */
     class Settings extends \UsabilityDynamics\Settings {
 
-      public function test() {
+      public function __construct( $args = array() ) {
 
-        die( 'test!' );
+        parent::__construct( $args );
 
       }
 
