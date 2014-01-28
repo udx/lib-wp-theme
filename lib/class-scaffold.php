@@ -82,16 +82,6 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
-       * Handles Special Rewrite Rules.
-       *
-       * @param array $options
-       */
-      public function rewrites( $options = array() ) {
-
-
-      }
-
-      /**
        * Define Dynamic Public Assets
        *
        * @param $options
@@ -148,11 +138,30 @@ namespace UsabilityDynamics\Theme {
        */
       public function scripts( $options = array() ) {
 
-        foreach( (array) $options as $name => $settings ) {
-          die( '<pre>' . print_r( $settings, true ) . '</pre>' );
-          die($name);
-        }
+        foreach( (array) $options as $name => $_settings ) {
 
+          $settings = array(
+            'name' => $name,
+            'url' => '',
+            'version' => $this->version,
+            'footer' => true,
+            'deps' => array()
+          );
+
+          if( is_array( $_settings ) ) {
+            $settings = Utility::extend( $settings, $_settings );
+          }
+
+          if( is_string( $_settings ) ) {
+            $settings = Utility::extend( $settings, array(
+              'name' => $name,
+              'url' => $_settings
+            ) );
+          }
+
+          // wp_register_script( $name, $settings[ 'url' ], $settings[ 'deps' ], $settings[ 'version' ], $settings[ 'footer' ] );
+
+        }
 
       }
 
@@ -162,7 +171,30 @@ namespace UsabilityDynamics\Theme {
        * @param array $options
        */
       public function styles( $options = array() ) {
+        foreach( (array) $options as $name => $_settings ) {
 
+          $settings = array(
+            'name' => $name,
+            'url' => '',
+            'version' => $this->version,
+            'footer' => true,
+            'deps' => array()
+          );
+
+          if( is_array( $_settings ) ) {
+            $settings = Utility::extend( $settings, $_settings );
+          }
+
+          if( is_string( $_settings ) ) {
+            $settings = Utility::extend( $settings, array(
+              'name' => $name,
+              'url' => $_settings
+            ) );
+          }
+
+          // wp_register_style( $name, $settings[ 'url' ], $settings[ 'deps' ], $settings[ 'version' ], $settings[ 'footer' ] );
+
+        }
 
       }
 
@@ -281,6 +313,16 @@ namespace UsabilityDynamics\Theme {
        */
       public function get( $key = null, $default = null ) {
         return $this->settings->get( $key, $default );
+      }
+
+      /**
+       * Handles Special Rewrite Rules.
+       *
+       * @param array $options
+       */
+      private function _rewrites( $options = array() ) {
+
+
       }
 
       /**
