@@ -83,6 +83,8 @@ namespace UsabilityDynamics\Theme {
        */
       public function rewrites( $options = array() ) {
 
+
+
       }
 
       /**
