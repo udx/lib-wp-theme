@@ -17,6 +17,7 @@
   "minimum-stability": "dev",
   "require": {
     "UsabilityDynamics/lib-ui": "master",
+    "UsabilityDynamics/lib-settings": "master",
     "UsabilityDynamics/wp-meta-box": "master"
   },
   "autoload": {

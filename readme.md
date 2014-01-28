@@ -13,7 +13,14 @@ class MyTheme extends \UsabilityDynamics\Theme\Scaffold {
 
   public function __construct() {
 
-    parent::__construct();
+    $this->settings();
+    $this->dynamic();
+    $this->rewrites();
+    $this->api();
+    $this->media();
+    $this->customizer();
+    $this->upgrade();
+    $this->supports();
 
   }
 

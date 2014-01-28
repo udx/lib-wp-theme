@@ -21,11 +21,58 @@ namespace UsabilityDynamics\Theme {
     class Scaffold {
 
       /**
+       * Theme ID.
+       *
+       * @param $id
+       * @var string
+       */
+      public $id;
+
+      /**
+       * Theme Version.
+       *
+       * @param $version
+       * @var string
+       */
+      public $version;
+
+      /**
+       * Theme Text Domain.
+       *
+       * @param $domain
+       * @var string
+       */
+      public $domain;
+
+      /**
+       * Theme Settings.
+       *
+       * @param $settings
+       * @var string
+       */
+      public $settings;
+
+      /**
        * Initializes Theme.
        *
        * @param array $options
        */
-      public static function initialize( $options = array() ) {
+      public function initialize( $options = array() ) {
+
+        if( !$this->id ) {
+          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Theme ID not specified.' );
+        }
+
+      }
+
+      /**
+       * Create Theme Settings Instance.
+       *
+       * @param array $options
+       */
+      public function settings( $options = array() ) {
+
+        $this->settings = \UsabilityDynamics::Settings( $options );
 
       }
 
@@ -34,7 +81,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @param array $options
        */
-      public static function rewrites( $options = array() ) {
+      public function rewrites( $options = array() ) {
 
       }
 
@@ -43,7 +90,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @param $options
        */
-      public static function dynamic( $options = array() ) {
+      public function dynamic( $options = array() ) {
         global $wp_rewrite, $__theme;
 
         $__theme = $options;
@@ -54,16 +101,16 @@ namespace UsabilityDynamics\Theme {
 
           //die( '<pre>' . print_r( $__theme, true ) . '</pre>' );
 
-          if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === '/scripts/app.css' ) {
-            self::_serve_public( 'style', 'blah css' );
+          if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === '/styles/app.css' ) {
+            $this->_serve_public( 'style', 'blah css' );
           }
 
           if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === '/scripts/app.js' ) {
-            self::_serve_public( 'script', 'blah js' );
+            $this->_serve_public( 'script', 'blah js' );
           }
 
           if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === '/models/app.json' ) {
-            self::_serve_public( 'model', 'app.json' );
+            $this->_serve_public( 'model', 'app.json' );
           }
 
         });
@@ -93,7 +140,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @param array $options
        */
-      public static function api( $options = array() ) {
+      public function api( $options = array() ) {
 
       }
 
@@ -102,7 +149,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @param array $options
        */
-      public static function structure( $options = array() ) {
+      public function structure( $options = array() ) {
 
       }
 
@@ -111,7 +158,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @param array $options
        */
-      public static function upgrade( $options = array() ) {
+      public function upgrade( $options = array() ) {
 
       }
 
@@ -120,7 +167,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @param array $options
        */
-      public static function customizer( $options = array() ) {
+      public function customizer( $options = array() ) {
 
       }
 
@@ -129,7 +176,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @param array $options
        */
-      public static function supports( $options = array() ) {
+      public function supports( $options = array() ) {
 
         foreach( (array) $options as $key => $config ) {
           add_theme_support( $key );
@@ -142,9 +189,29 @@ namespace UsabilityDynamics\Theme {
        *
        * @param array $options
        */
-      public static function media( $options = array() ) {
+      public function media( $options = array() ) {
 
         // add_image_size( 'hd_large', 890, 500, true );
+
+      }
+
+      /**
+       * Set Theme Option.
+       *
+       * @param $key
+       * @param $value
+       */
+      public function set( $key, $value ) {
+
+      }
+
+      /**
+       * Get Theme Option.
+       *
+       * @param $key
+       * @param $default
+       */
+      public function get( $key, $default ) {
 
       }
 
@@ -154,7 +221,7 @@ namespace UsabilityDynamics\Theme {
        * @param string $type
        * @param string $data
        */
-      public static function _serve_public( $type = '', $data = '' ) {
+      private function _serve_public( $type = '', $data = '' ) {
 
         // Configure Data.
         $data = apply_filters( 'udx:theme:public:' . $type . ':data', $data );
@@ -183,7 +250,7 @@ namespace UsabilityDynamics\Theme {
        * Handles Theme Activation.
        *
        */
-      public static function _activate() {
+      public function _activate() {
 
       }
 
@@ -191,7 +258,7 @@ namespace UsabilityDynamics\Theme {
        * Handles Theme Deactivation.
        *
        */
-      public static function _deactivate() {
+      public function _deactivate() {
 
       }
 
@@ -199,7 +266,7 @@ namespace UsabilityDynamics\Theme {
        * Handles Theme Installation.
        *
        */
-      public static function _install() {
+      public function _install() {
 
       }
 
@@ -207,7 +274,7 @@ namespace UsabilityDynamics\Theme {
        * Handles Theme Upgrades.
        *
        */
-      public static function _upgrade() {
+      public function _upgrade() {
 
       }
 
