@@ -231,6 +231,10 @@ namespace UsabilityDynamics\Theme {
       /**
        * Configure Carrington Builder.
        *
+       * @example
+       *
+       *      $this->carrington->add_module_style( 'polaroid', home_url( '/images/style-polaroid.jpg' ), 'cfct_module_callout' );
+       *
        * @param array $args
        */
       public function carrington( $args = array() ) {
@@ -240,6 +244,13 @@ namespace UsabilityDynamics\Theme {
         ));
 
         $this->carrington = new Carrington( $args );
+
+        //$this->carrington->template->register_type('module', $classname, $args);
+        //$this->carrington->template->deregister_type('module', $classname);
+        //$this->carrington->template->register_type('row', $classname);
+        //$this->carrington->template->deregister_type('row', $classname);
+        //cfct_module_options::get_instance()->register($classname);
+        //cfct_module_options::get_instance()->deregister($classname);
 
       }
 
