@@ -297,6 +297,13 @@ namespace UsabilityDynamics\Theme {
        */
       public function customizer( $options = array() ) {
 
+        // @temp
+        add_action( 'customize_register', function( $wp_customize ) {
+          $wp_customize->remove_section( 'title_tagline' );
+          $wp_customize->remove_section( 'static_front_page' );
+          $wp_customize->remove_section( 'nav' );
+        });
+
         foreach( (array) $options as $key => $config ) {
           // add_theme_support( $key );
         }

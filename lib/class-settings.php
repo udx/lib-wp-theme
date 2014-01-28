@@ -18,24 +18,18 @@ namespace UsabilityDynamics\Theme {
        * @since 2.0.0
        */
       static function define( $args = false ) {
-        
-        // STEP 1. Prepare options
-        $thminfo = get_file_data( get_stylesheet_directory() . '/style.css', array( 'name' => 'Theme Name' ) );
-        $key = 'theme::' . ( sanitize_key( $thminfo[ 'name' ] ) );
-        
-        // STEP 2. Instantiate Settings object
-        $_instance = new Settings( \wp_parse_args( $args, array(
+
+        // Instantiate Settings object
+        $_instance = new Settings( Utility::parse_args( $args, array(
           "store" => "options",
-          "key"   => $key,
-        ) ) );
-        
-        // STEP 3. Prepare default data which is used for storing in DB.
-        $_data = $_instance->get();
-        if( empty( $_data ) ) {
+          "key"   => 'theme::' . ( wp_get_theme()->get( 'Name' ) ),
+        )));
+
+        // Prepare default data which is used for storing in DB.
+        if( !$_instance->get() ) {
           $_instance->set( $_instance->_get_system_settings() );
-          //$_instance->commit();
         }
-        
+
         // Return Instance.
         return $_instance;
 
@@ -45,20 +39,19 @@ namespace UsabilityDynamics\Theme {
        * Get default Settings from schema
        *
        */
-      private function _get_system_settings() {
-        $short_path = '/static/schemas/default.settings.json';
-        $file = get_stylesheet_directory() . $short_path;
-        if( !file_exists( $file ) ) {
-          $file = get_template_directory() . $short_path;
+      private function _get_system_settings( $path = '/static/schemas/default.settings.json' ) {
+
+        if( file_exists( $file = get_stylesheet_directory() . $path ) ) {
+          return $this->_localize( json_decode( file_get_contents( $file ), true ) );
         }
-        if( !file_exists( $file ) ) {
-          return array();
-        }
-        return $this->_localize( json_decode( file_get_contents( $file ), true ) );
+
+        return array();
+
       }
       
       /**
-       * Localization functionality.
+       * Localization Functionality.
+       *
        * Replaces array's l10n data.
        * Helpful for localization of data which is stored in JSON files ( see /schemas )
        *
@@ -69,7 +62,9 @@ namespace UsabilityDynamics\Theme {
        */
       private function _localize( $data ) {
 
-        if ( !is_array( $data ) ) return $data;
+        if ( !is_array( $data ) && !is_object( $data ) ) {
+          return $data;
+        }
 
         //** The Localization's list. */
         $l10n = apply_filters( 'ud::theme::festival', array(
@@ -77,7 +72,7 @@ namespace UsabilityDynamics\Theme {
         ));
 
         //** Replace l10n entries */
-        foreach ( $data as $k => $v ) {
+        foreach( $data as $k => $v ) {
           if ( is_array( $v ) ) {
             $data[ $k ] = self::_localize( $v );
           } elseif ( is_string( $v ) ) {

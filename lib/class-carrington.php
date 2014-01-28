@@ -27,6 +27,8 @@ namespace UsabilityDynamics\Theme {
         $args = Utility::defaults( $args, array(
           'bootstrap' => true,
           'templates' => true,
+          'debug'     => false,
+          'landing'   => false,
           'modules'   => array(),
           'rows'      => array()
         ) );
@@ -35,9 +37,17 @@ namespace UsabilityDynamics\Theme {
           return false;
         }
 
-        define( 'CFCT_BUILD_ENABLE_TEMPLATES', true );
-        define( 'CFCT_BUILD_TAXONOMY_LANDING', false );
-        define( 'CFCT_BUILD_DEBUG_ERROR_LOG', false );
+        if( !defined( 'CFCT_BUILD_DEBUG_ERROR_LOG' ) ) {
+          define( 'CFCT_BUILD_DEBUG_ERROR_LOG', $args->debug );
+        }
+
+        if( !defined( 'CFCT_BUILD_TAXONOMY_LANDING' ) ) {
+          define( 'CFCT_BUILD_TAXONOMY_LANDING', $args->landing );
+        }
+
+        if( $args->templates ) {
+          $this->templates();
+        }
 
         if( $args->bootstrap ) {
           $this->bootstrap();
@@ -144,7 +154,20 @@ namespace UsabilityDynamics\Theme {
         $location[ 'loc' ]  = 'theme';
         $location[ 'path' ] = dirname( $this->path );
         $location[ 'url' ]  = site_url( '/vendor/usabilitydynamics/lib-carrington/lib' );
+
         return $location;
+      }
+
+      /**
+       * Enable Templates
+       *
+       */
+      private function templates() {
+
+        add_filter( 'cfct-build-enable-templates', function () {
+          return true;
+        } );
+
       }
 
       /**
@@ -216,7 +239,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @return string HTML
        */
-      public function add_module_style( $class = false, $image_path = '', $type = 'general' ) {
+      public static function add_module_style( $class = false, $image_path = '', $type = 'general' ) {
 
         if( $image_path && $class ) {
           add_filter( 'udx:theme:carrington:styles', create_function( '$options, $type="' . $type . '", $image_path="' . $image_path . '", $class="' . $class . '" ', '  $options[$type][$class] = $image_path;  return $options; ' ) );
@@ -229,7 +252,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @return array
        */
-      function admin_theme_style_images( $type ) {
+      public static function admin_theme_style_images( $type ) {
 
         $options[ 'general' ] = array();
 
@@ -260,7 +283,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @return string HTML
        */
-      function _theme_chooser( $form_html, $data ) {
+      public static function _theme_chooser( $form_html, $data ) {
 
         $type = $data[ 'module_type' ];
 
@@ -331,7 +354,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @return string
        */
-      function cfct_module_wrapper_classes( $class, $data ) {
+      public static function cfct_module_wrapper_classes( $class, $data ) {
         $type = $data[ 'module_type' ];
 
         $classes = explode( ' ', $class );
@@ -357,7 +380,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @return string
        */
-      function _theme_chooser_js( $js ) {
+      public static function _theme_chooser_js( $js ) {
         $js .= preg_replace( '/^(\t){2}/m', '', '
 
       cfct_set_theme_choice = function(clicked) {
@@ -393,7 +416,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @return string
        */
-      function _theme_chooser_css( $css ) {
+      public static function _theme_chooser_css( $css ) {
         $css .= preg_replace( '/^(\t){2}/m', '', '
       /* Theme Chooser Additions */
       #cfct-custom-theme-style-chooser .cfct-image-select-current-image {
@@ -447,7 +470,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @return void
        */
-      function _theme_admin_form( $widget_id, $module_id ) {
+      public static function _theme_admin_form( $widget_id, $module_id ) {
         add_filter( 'cfct-module-' . $module_id . '-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
       }
 
