@@ -229,6 +229,35 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
+       * Configure Carrington Builder.
+       *
+       * @param array $args
+       */
+      public function carrington( $args = array() ) {
+
+        $args = Utility::defaults( $args, array(
+          'bootstrap' => true
+        ));
+
+        $this->carrington = new Carrington( $args );
+
+      }
+
+      /**
+       * Add Header Tag.
+       *
+       * @todo apply_filters( 'disco::head' );
+       * @todo add_action( 'wp_head', function () {});
+       *
+       * @temporary
+       */
+      public function head( $options = array() ) {
+
+        // add_action( 'wp_head', function () {});
+
+      }
+
+      /**
        * Declare Data Structure.
        *
        * @param array $options

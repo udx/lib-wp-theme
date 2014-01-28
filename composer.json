@@ -19,7 +19,7 @@
     "UsabilityDynamics/lib-model": "master",
     "UsabilityDynamics/lib-requires": "master",
     "UsabilityDynamics/lib-settings": "master",
-    "UsabilityDynamics/lib-utility": "master"
+    "UsabilityDynamics/lib-utility": "master",
     "UsabilityDynamics/lib-ui": "master",
     "UsabilityDynamics/lib-wp-rpc": "master"
   },
