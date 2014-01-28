@@ -1,6 +1,6 @@
 <?php
 /**
- * Theme Customizer.
+ * Theme Scaffolding.
  *
  * @author team@UD
  * @version 0.2.4
@@ -10,15 +10,15 @@
  */
 namespace UsabilityDynamics\Theme {
 
-  if( !class_exists( '\UsabilityDynamics\Theme\Customizer' ) ) {
+  if( !class_exists( '\UsabilityDynamics\Theme\Scaffold' ) ) {
 
     /**
-     * Customizer Class
+     * Scaffold Class
      *
-     * @class Customizer
+     * @class Scaffold
      * @author potanin@UD
      */
-    class Customizer {
+    class Scaffold {
 
     }
 
