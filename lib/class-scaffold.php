@@ -92,51 +92,11 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
-       * Handle Script Rewrites.
-       *
-       * @param array $options
-       */
-      public function scripts( $options = array() ) {
-
-        foreach( (array) $options as $name => $settings ) {
-          die( '<pre>' . print_r( $settings, true ) . '</pre>' );
-          die($name);
-        }
-
-
-      }
-
-      public function manage( $options = array() ) {
-
-        //$settings->set( 'pages.manage', add_dashboard_page( __( 'Manage', HDDP ), __( 'Manage', HDDP ), $hddp[ 'manage_options' ], 'hddp_manage', array( 'UsabilityDynamics\Disco', 'hddp_manage' ) ) );
-
-      }
-
-        /**
-       * Handle Style Rewrites.
-       *
-       * @param array $options
-       */
-      public function styles( $options = array() ) {
-
-
-      }
-
-      /**
-       * Configures API/RPC Methods.
-       *
-       * @param array $options
-       */
-      public function api( $options = array() ) {
-
-      }
-
-      /**
        * Define Dynamic Public Assets
        *
        * @param $options
        */
-      public function dynamic( $options = array() ) {
+      public function models( $options = array() ) {
         global $wp_rewrite, $__theme;
 
         $__theme = $options;
@@ -178,6 +138,61 @@ namespace UsabilityDynamics\Theme {
         });
 
         //die( json_encode( get_option( 'rewrite_rules' ) ) );
+
+      }
+
+      /**
+       * Handle Script Rewrites.
+       *
+       * @param array $options
+       */
+      public function scripts( $options = array() ) {
+
+        foreach( (array) $options as $name => $settings ) {
+          die( '<pre>' . print_r( $settings, true ) . '</pre>' );
+          die($name);
+        }
+
+
+      }
+
+      /**
+       * Handle Style Rewrites.
+       *
+       * @param array $options
+       */
+      public function styles( $options = array() ) {
+
+
+      }
+
+      /**
+       * Handle Font Rewrties.
+       *
+       * @param array $options
+       */
+      public function fonts( $options = array() ) {
+
+
+      }
+
+      /**
+       * Management Page / Interface.
+       *
+       * @param array $options
+       */
+      public function manage( $options = array() ) {
+
+        //$settings->set( 'pages.manage', add_dashboard_page( __( 'Manage', HDDP ), __( 'Manage', HDDP ), $hddp[ 'manage_options' ], 'hddp_manage', array( 'UsabilityDynamics\Disco', 'hddp_manage' ) ) );
+
+      }
+
+      /**
+       * Configures API/RPC Methods.
+       *
+       * @param array $options
+       */
+      public function api( $options = array() ) {
 
       }
 
