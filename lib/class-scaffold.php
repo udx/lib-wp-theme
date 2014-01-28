@@ -72,7 +72,7 @@ namespace UsabilityDynamics\Theme {
        */
       public function settings( $options = array() ) {
 
-        $this->settings = \UsabilityDynamics::Settings( $options );
+        //$this->settings = \UsabilityDynamics::Settings( $options );
 
       }
 
