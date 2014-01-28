@@ -70,9 +70,17 @@ namespace UsabilityDynamics\Theme {
        *
        * @param array $options
        */
-      public function settings( $options = array() ) {
+      public function settings( $args = array() ) {
 
-        //$this->settings = \UsabilityDynamics::Settings( $options );
+        $args = Utility::defaults( $args, array(
+
+        ));
+
+        Settings::test();
+
+        $this->settings = new Settings( $args );
+
+        die( '<pre>' . print_r( $this->settings , true ) . '</pre>' );
 
       }
 

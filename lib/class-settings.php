@@ -10,15 +10,21 @@
  */
 namespace UsabilityDynamics\Theme {
 
-  if( !class_exists( '\UsabilityDynamics\Theme\Settings' ) ) {
+  if( !class_exists( 'UsabilityDynamics\Theme\Settings' ) ) {
 
     /**
      * Settings Class
      *
-     * @class Customizer
+     * @class Settings
      * @author potanin@UD
      */
     class Settings extends \UsabilityDynamics\Settings {
+
+      public function test() {
+
+        die( 'test!' );
+
+      }
 
     }
 
