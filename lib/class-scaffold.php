@@ -54,15 +54,15 @@ namespace UsabilityDynamics\Theme {
 
           //die( '<pre>' . print_r( $__theme, true ) . '</pre>' );
 
-          if( $_SERVER[ 'REDIRECT_URL' ] === '/scripts/app.css' ) {
+          if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === '/scripts/app.css' ) {
             self::_serve_public( 'style', 'blah css' );
           }
 
-          if( $_SERVER[ 'REDIRECT_URL' ] === '/scripts/app.js' ) {
+          if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === '/scripts/app.js' ) {
             self::_serve_public( 'script', 'blah js' );
           }
 
-          if( $_SERVER[ 'REDIRECT_URL' ] === '/models/app.json' ) {
+          if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === '/models/app.json' ) {
             self::_serve_public( 'model', 'app.json' );
           }
 
@@ -71,9 +71,9 @@ namespace UsabilityDynamics\Theme {
         // Modify Rewrite Rules.
         add_filter( 'option_rewrite_rules', function( $rules ) {
 
-          $_rules[ '/scripts/{1}.js$' ] = 'index.php?public_asset=true&$matches[1]';
-          $_rules[ '/styles/{1}.css$' ] = 'index.php?public_asset=true$matches[1]';
-          $_rules[ '/models/{1}.json$' ] = 'index.php?public_asset=true$matches[1]';
+          $_rules[ '/scripts/{1}.js$' ] = 'index.php?dynamic=true&$matches[1]';
+          $_rules[ '/styles/{1}.css$' ] = 'index.php?dynamic=true&matches[1]';
+          $_rules[ '/models/{1}.json$' ] = 'index.php?dynamic=true&matches[1]';
 
           foreach( $rules as $key => $value ) {
             $_rules[ $key ] = $value;
