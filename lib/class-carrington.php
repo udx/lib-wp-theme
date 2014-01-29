@@ -58,32 +58,32 @@ namespace UsabilityDynamics\Theme {
         // CB url fix
         add_filter( 'cfct-build-url', function ( $url ) {
           return str_replace( '\\', '/', $url );
-        } );
+        });
 
         add_filter( 'init', function () {
 
           // Disable default CB styles
           wp_deregister_style( 'cfct-build-css' );
 
-        } );
+        });
 
         add_filter( 'cfct-modules-included', function ( $dirs ) {
-          cfct_build_deregister_module( 'cfct_module_loop' );
-          cfct_build_deregister_module( 'cfct_module_pullquote' );
-          cfct_build_deregister_module( 'cfct_module_loop_subpages' );
-          cfct_build_deregister_module( 'cfct_module_html' );
-          cfct_build_deregister_module( 'cfct_module_hero' );
-          cfct_build_deregister_module( 'cfct_module_heading' );
-          cfct_build_deregister_module( 'cfct_module_divider' );
-          cfct_build_deregister_module( 'cfct_module_sidebar' );
-          cfct_build_deregister_module( 'cfct_module_carousel' );
-          cfct_build_deregister_module( 'cfct_module_plain_text' );
-          cfct_build_deregister_module( 'cfct_module_gallery' );
-        } );
+          // cfct_build_deregister_module( 'cfct_module_loop' );
+          // cfct_build_deregister_module( 'cfct_module_pullquote' );
+          // cfct_build_deregister_module( 'cfct_module_loop_subpages' );
+          // cfct_build_deregister_module( 'cfct_module_html' );
+          // cfct_build_deregister_module( 'cfct_module_hero' );
+          // cfct_build_deregister_module( 'cfct_module_heading' );
+          // cfct_build_deregister_module( 'cfct_module_divider' );
+          // cfct_build_deregister_module( 'cfct_module_sidebar' );
+          // cfct_build_deregister_module( 'cfct_module_carousel' );
+          // cfct_build_deregister_module( 'cfct_module_plain_text' );
+          // cfct_build_deregister_module( 'cfct_module_gallery' );
+        });
 
         add_filter( 'cfct-module-dirs', function ( $dirs ) {
           return $dirs;
-        } );
+        });
 
         add_action( 'cfct-rows-loaded', function ( $dirs ) {
           //include_once( __DIR__ . '/lib/row-two-sidebars/row-two-sidebars.php' );
@@ -93,7 +93,7 @@ namespace UsabilityDynamics\Theme {
           global $post;
 
           return $current . ( get_post_meta( $post->ID, '_cfct_build_data', true ) ? ' build-enabled' : ' build-disabled' );
-        } );
+        });
 
         add_filter( 'cfct-build-module-url-unknown', function ( $url, $module, $file_key ) {
           return home_url( "/vendor/usabilitydynamics/lib-carrington/lib/modules/" . $file_key . '/' );
@@ -114,16 +114,16 @@ namespace UsabilityDynamics\Theme {
 
           return implode( '', $options );
 
-        } );
+        });
 
         add_filter( 'cfct-build-module-class', function ( $class ) {
           return trim( $class . '' );
-        } );
+        });
 
         add_filter( 'cfct-module-cf-post-callout-module-view', function ( $view ) {
           return $view;
           //return __DIR__ . '/lib/carrington-build/modules/post-callout/view.php';
-        } );
+        });
 
         add_filter( 'cfct-module-cfct-callout-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
         add_filter( 'cfct-module-cf-post-callout-module-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
@@ -166,7 +166,7 @@ namespace UsabilityDynamics\Theme {
 
         add_filter( 'cfct-build-enable-templates', function () {
           return true;
-        } );
+        });
 
       }
 
@@ -178,47 +178,47 @@ namespace UsabilityDynamics\Theme {
 
         add_filter( 'cfct-block-c6-12-classes', function ( $classes ) {
           return array_merge( array( 'col-md-4', 'col-sm-4', 'col-lg-4', 'col-first' ), $classes );
-        } );
+        });
 
         add_filter( 'cfct-block-c6-34-classes', function ( $classes ) {
           return array_merge( array( 'col-md-4', 'col-sm-4', 'col-lg-4', 'col-middle' ), $classes );
-        } );
+        });
 
         add_filter( 'cfct-block-c6-56-classes', function ( $classes ) {
           return array_merge( array( 'col-md-4', 'col-sm-6', 'col-lg-4', 'col-last' ), $classes );
-        } );
+        });
 
         add_filter( 'cfct-block-c6-123-classes', function ( $classes ) {
           return array_merge( array( 'col-md-6', 'col-sm-6', 'col-lg-6', 'col-first' ), $classes );
-        } );
+        });
 
         add_filter( 'cfct-block-c6-456-classes', function ( $classes ) {
           return array_merge( array( 'col-md-6', 'col-sm-6', 'col-lg-6', 'col-last' ), $classes );
-        } );
+        });
 
         add_filter( 'cfct-block-c4-12-classes', function ( $classes ) {
           return array_merge( array( 'col-md-6', 'col-sm-6', 'col-lg-6', 'col-first' ), $classes );
-        } );
+        });
 
         add_filter( 'cfct-block-c4-34-classes', function ( $classes ) {
           return array_merge( array( 'col-md-6', 'col-sm-6', 'col-lg-6', 'col-last' ), $classes );
-        } );
+        });
 
         add_filter( 'cfct-block-c6-1234-classes', function ( $classes ) {
           return array_merge( array( 'col-md-8', 'col-sm-12', 'col-lg-8', 'col-first' ), $classes );
-        } );
+        });
 
         add_filter( 'cfct-block-c6-3456-classes', function ( $classes ) {
           return array_merge( array( 'col-md-8', 'col-sm-12', 'col-lg-8', 'col-last' ), $classes );
-        } );
+        });
 
         add_filter( 'cfct-block-c6-123456-classes', function ( $classes ) {
           return array_merge( array( 'col-md-12', 'col-sm-12', 'col-lg-12', 'col-first', 'col-last', 'col-full-width' ), $classes );
-        } );
+        });
 
         add_filter( 'cfct-block-c4-1234-classes', function ( $classes ) {
           return array_merge( array( 'col-md-12', 'col-sm-12', 'col-lg-12', 'col-first', 'col-last', 'col-full-width' ), $classes );
-        } );
+        });
 
       }
 
