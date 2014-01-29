@@ -229,6 +229,23 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
+       * Declare UDX Models / Scripts.
+       *
+       * * Adds cdn.udx.io script tag to <head>
+       *
+       * @param array $args
+       */
+      public function requires( $args = array() ) {
+
+        $args = Utility::defaults( $args, array(
+          'bootstrap' => true
+        ));
+
+        $this->requires = new Requires( $args );
+
+      }
+
+      /**
        * Configure Carrington Builder.
        *
        * @example
@@ -277,7 +294,6 @@ namespace UsabilityDynamics\Theme {
 
         // Add Metabox Options.
         //\Flawless\Management::add_post_type_option( array( 'post_type' => $type, 'type' => $vars[ 'admin_type' ], 'position' => $x++, 'meta_key' => $slug, 'label' => $vars[ 'admin_label' ], 'placeholder' => $vars[ 'placeholder' ], ));
-
 
       }
 
