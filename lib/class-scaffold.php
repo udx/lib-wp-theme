@@ -291,10 +291,15 @@ namespace UsabilityDynamics\Theme {
        * @param array $options
        */
       public function structure( $options = array() ) {
-
-        // Add Metabox Options.
-        //\Flawless\Management::add_post_type_option( array( 'post_type' => $type, 'type' => $vars[ 'admin_type' ], 'position' => $x++, 'meta_key' => $slug, 'label' => $vars[ 'admin_label' ], 'placeholder' => $vars[ 'placeholder' ], ));
-
+        
+        $options = wp_parse_args( $options, array(
+          'types' => array(), // Custom post types
+          'meta' => array(), // Meta fields. The list of arrays. Every meta array is set of /RW_Meta_Box field attributes
+          'taxonomies' => array(), // Taxonomies
+        ) );
+        
+        \UsabilityDynamics\Structure::define( $options );
+        
       }
 
       /**
