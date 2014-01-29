@@ -70,14 +70,15 @@ namespace UsabilityDynamics\Theme {
        *
        * @param array $options
        */
-      public function settings( $args = array() ) {
-
-        $args = Utility::defaults( $args, array(
+      public function settings( $args = array(), $data = array() ) {
+        
+        $data = array_filter( wp_parse_args( $data, array(
           'id' => $this->id,
-          'version' => $this->version
-        ));
+          'version' => $this->version,
+          'domain' => $this->domain
+        ) ) );
 
-        $this->settings = Settings::define( $args );
+        $this->settings = Settings::define( $args, $data );
 
       }
 
