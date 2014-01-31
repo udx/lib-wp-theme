@@ -1,13 +1,13 @@
 <?php
 
-if( !class_exists( 'cfct_module_widget' ) ) {
+if( !class_exists( 'WidgetModule' ) ) {
   /**
    * Widget Carrington Build Module
    * Displays a WordPress 2.8+ object based widget anywhere in the layout.
    * Will defer old style widgets to the SideBar module.
    *
    */
-  class cfct_module_widget extends cfct_build_module {
+  class WidgetModule extends cfct_build_module {
     protected $_deprecated_id = 'cfct-widget-module'; // deprecated property, not needed for new module development
 
     protected $registered_widgets;
@@ -247,7 +247,7 @@ if( !class_exists( 'cfct_module_widget' ) ) {
    * Full widget class for loading in all 2.8+ widgets as individual modules
    *
    */
-  class cfct_module_widget_full extends cfct_module_widget {
+  class WidgetModule_full extends WidgetModule {
     protected $_widget_id;
     protected $_classname;
 
@@ -302,7 +302,7 @@ if( !class_exists( 'cfct_module_widget' ) ) {
 // Registration functions
 
   function cfct_register_widget_modules() {
-    if( class_exists( 'cfct_module_widget_full' ) ) {
+    if( class_exists( 'WidgetModule_full' ) ) {
       $widgets = cfct_get_modern_widgets();
 
       foreach( $widgets as $id => $widget ) {
@@ -313,11 +313,11 @@ if( !class_exists( 'cfct_module_widget' ) ) {
           'description' => isset( $widget ) && isset( $widget[ 'description' ] ) ? $widget[ 'description' ] : '',
           'icon'        => 'widget/icon.png'
         );
-        cfct_build_register_module( 'cfct_module_widget_full', $args );
+        cfct_build_register_module( 'WidgetModule_full', $args );
       }
     }
   }
 
   add_action( 'cfct-modules-included', 'cfct_register_widget_modules' );
+
 }
-?>

@@ -242,6 +242,37 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
+       * Register Module
+       *
+       * @param $classname
+       * @param $args
+       *
+       * @return bool
+       */
+      public function registerModule( $classname, $args ) {
+        global $cfct_build;
+
+        _doing_it_wrong( 'register', __( 'Module registration called too early, before init.' ) );
+
+        if( func_num_args() > 1 && !is_array( $args ) ) {
+          _deprecated_argument( __FUNCTION__, '1.0.2', 'Use of the <code>$id</code> parameter when registering a module has been deprecated. Pass only the module\'s classname when registering your module' );
+          $args = array();
+          list( , $classname, $args ) = func_get_args();
+        }
+
+
+        if( $cfct_build instanceof \cfct_build_common ) {
+
+          $cfct_build->template->register_type( 'module', $classname, $args );
+
+          return true;
+        } else {
+          return false;
+        }
+
+      }
+
+      /**
        * Easy way of adding custom styles to Carrington Build Module style selector
        *
        * Type Options:
