@@ -82,10 +82,10 @@ namespace UsabilityDynamics\Theme {
           wp_deregister_style( 'cfct-build-css' );
         }, 50 );
 
-        add_filter( 'cfct-build-enabled-post-types', function ( $types ) {
-          return $this->post_types;
-        } );
+        add_filter( 'cfct-build-enabled-post-types', array( $this, 'set_post_types' ) );
 
+        add_filter( 'cfct-module-dirs', array( $this, 'set_module_directories' ) );
+        
         add_filter( 'cfct-modules-included', function ( $dirs ) {
           // cfct_build_deregister_module( 'cfct_module_loop' );
           // cfct_build_deregister_module( 'cfct_module_pullquote' );
@@ -100,9 +100,7 @@ namespace UsabilityDynamics\Theme {
           // cfct_build_deregister_module( 'cfct_module_gallery' );
         } );
 
-        add_filter( 'cfct-module-dirs', function ( $dirs ) {
-          return $this->module_directories;
-        } );
+
 
         add_action( 'cfct-rows-loaded', function ( $dirs ) {
           //include_once( __DIR__ . '/lib/row-two-sidebars/row-two-sidebars.php' );
@@ -160,6 +158,14 @@ namespace UsabilityDynamics\Theme {
 
         return $this;
 
+      }
+      
+      public function set_post_types() {
+        return $this->post_types;
+      }
+      
+      public function set_module_directories() {
+        return $this->module_directories;
       }
 
       /**
