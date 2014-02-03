@@ -255,15 +255,15 @@ namespace UsabilityDynamics\Theme {
        *
        * @return bool
        */
-      public function registerModule( $classname, $args ) {
+      public function registerModule( $classname, $args = array() ) {
         global $cfct_build;
 
-        _doing_it_wrong( 'register', __( 'Module registration called too early, before init.' ) );
+        _doing_it_wrong( 'register', __( 'Module registration called too early, before init.' ), 0 );
 
         if( func_num_args() > 1 && !is_array( $args ) ) {
           _deprecated_argument( __FUNCTION__, '1.0.2', 'Use of the <code>$id</code> parameter when registering a module has been deprecated. Pass only the module\'s classname when registering your module' );
           $args = array();
-          list( , $classname, $args ) = func_get_args();
+          list( $classname, $args ) = func_get_args();
         }
 
 
