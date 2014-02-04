@@ -339,8 +339,16 @@ namespace UsabilityDynamics\Theme {
        */
       public function supports( $options = array() ) {
 
-        foreach( (array) $options as $key => $config ) {
-          add_theme_support( $key );
+        foreach( (array) $options as $feature => $config ) {
+
+          if( $config && is_array( $config ) ) {
+            add_theme_support( $feature, $config );
+          }
+
+          if( !$config || is_null( $config ) ) {
+            remove_theme_support( $feature );
+          }
+
         }
 
       }
@@ -351,13 +359,17 @@ namespace UsabilityDynamics\Theme {
        * @param array $options
        */
       public function media( $options = array() ) {
+        global $_wp_additional_image_sizes;
 
         foreach( (array) $options as $name => $settings ) {
-          add_image_size( $name,
-            $settings[ 'width' ],
-            isset( $settings[ 'height' ] ) ? $settings[ 'height' ] : 9999,
-            isset( $settings[ 'crop' ] ) ? $settings[ 'crop' ] : false
-          );
+
+          if( $name === 'post-thumbnail' ) {
+            add_theme_support( 'post-thumbnails' );
+            set_post_thumbnail_size( $settings[ 'width' ], $settings[ 'height' ], isset( $settings[ 'crop' ] ) ? $settings[ 'crop' ] : false );
+          } else {
+            add_image_size( $name, $settings[ 'width' ], isset( $settings[ 'height' ] ) ? $settings[ 'height' ] : 9999, isset( $settings[ 'crop' ] ) ? $settings[ 'crop' ] : false );
+          }
+
         }
 
         return $options;
