@@ -33,6 +33,24 @@ namespace UsabilityDynamics\Theme {
        */
       public $module_directories = null;
 
+      /**
+       * ID of instance, used for settings.
+       *
+       * Parses namespace, should be something like wpp:theme:festival
+       *
+       * @public
+       * @property id
+       * @var string
+       */
+      public $row_directories = null;
+
+      /**
+       * Carrington Builder Instance.
+       *
+       * @var null
+       */
+      public $_builder = null;
+
       public function __construct( $args = array() ) {
 
         $args = Utility::defaults( $args, array(
@@ -48,6 +66,7 @@ namespace UsabilityDynamics\Theme {
         $this->post_types = array_merge( array( 'post', 'page' ), (array) $args->post_types );
 
         $this->module_directories = array_merge( array( __DIR__ . '/modules' ), (array) $args->module_directories );
+        $this->row_directories    = array_merge( array( __DIR__ . '/rows' ), (array) $args->row_directories );
 
         if( !is_file( $this->path = dirname( dirname( __DIR__ ) ) . '/lib-carrington/lib/carrington-build.php' ) ) {
           return false;
@@ -69,23 +88,18 @@ namespace UsabilityDynamics\Theme {
           $this->bootstrap();
         }
 
-        add_filter( 'cfct-build-loc', array( &$this, 'cfct_build_loc' ) );
+        add_action( 'init', array( $this, 'init' ), 50 );
 
-        // CB url fix
+        add_filter( 'cfct-build-loc', array( &$this, 'cfct_build_loc' ) );
         add_filter( 'cfct-build-url', function ( $url ) {
           return str_replace( '\\', '/', $url );
         } );
 
-        // Disable default CB Styles and Scripts.
-        add_filter( 'init', function () {
-          wp_deregister_script( 'cfct-build-js' );
-          wp_deregister_style( 'cfct-build-css' );
-        }, 50 );
-
         add_filter( 'cfct-build-enabled-post-types', array( $this, 'set_post_types' ) );
 
+        add_filter( 'cfct-row-dirs', array( $this, 'set_row_directories' ) );
         add_filter( 'cfct-module-dirs', array( $this, 'set_module_directories' ) );
-        
+
         add_filter( 'cfct-modules-included', function ( $dirs ) {
           // cfct_build_deregister_module( 'cfct_module_loop' );
           // cfct_build_deregister_module( 'cfct_module_pullquote' );
@@ -100,10 +114,8 @@ namespace UsabilityDynamics\Theme {
           // cfct_build_deregister_module( 'cfct_module_gallery' );
         } );
 
-
-
         add_action( 'cfct-rows-loaded', function ( $dirs ) {
-          //include_once( __DIR__ . '/lib/row-two-sidebars/row-two-sidebars.php' );
+          return $dirs;
         }, 100 );
 
         add_filter( 'cfct-build-display-class', function ( $current ) {
@@ -113,7 +125,7 @@ namespace UsabilityDynamics\Theme {
         } );
 
         add_filter( 'cfct-build-module-url-unknown', function ( $url, $module, $file_key ) {
-          return home_url( "/vendor/usabilitydynamics/lib-carrington/lib/modules/" . $file_key . '/' );
+          return plugins_url( '/modules' . $file_key . '/', __DIR__ );
         }, 10, 3 );
 
         add_filter( 'cfct-build-page-options', function () {
@@ -137,20 +149,16 @@ namespace UsabilityDynamics\Theme {
           return trim( $class . '' );
         } );
 
-        add_filter( 'cfct-module-cf-post-callout-module-view', function ( $view ) {
-          return $view;
-          //return __DIR__ . '/lib/carrington-build/modules/post-callout/view.php';
-        } );
+        add_action( 'cfct-widget-module-registered', array( get_class(), '_theme_admin_form' ), 10, 2 );
 
         add_filter( 'cfct-module-cfct-callout-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
-        add_filter( 'cfct-module-cf-post-callout-module-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
+        add_filter( 'cfct-module-cfct-post-callout-module-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
         add_filter( 'cfct-module-cfct-heading-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
         add_filter( 'cfct-module-cfct-plain-text-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
         add_filter( 'cfct-module-cfct-rich-text-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
         add_filter( 'cfct-module-cfct-module-loop-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
         add_filter( 'cfct-module-cfct-module-loop-subpages-admin-form', array( get_class(), '_theme_chooser' ), 10, 2 );
 
-        add_action( 'cfct-widget-module-registered', array( get_class(), '_theme_admin_form' ), 10, 2 );
         add_filter( 'cfct-get-extras-modules-css-admin', array( get_class(), '_theme_chooser_css' ), 10, 1 );
         add_filter( 'cfct-get-extras-modules-js-admin', array( get_class(), '_theme_chooser_js' ), 10, 1 );
 
@@ -159,12 +167,67 @@ namespace UsabilityDynamics\Theme {
         return $this;
 
       }
-      
+
+      public function init() {
+        global $cfct_build;
+
+        $this->_builder = $cfct_build;
+
+        // Remove default Scripts and Styles.
+        wp_deregister_script( 'cfct-build-js' );
+        wp_deregister_style( 'cfct-build-css' );
+
+        // Import. (note sure why this isn't called automatically).
+        $this->_builder->import_included_rows();
+
+        // Register Standard Modules.
+        $this->registerModule( 'HTMLModule' );
+        $this->registerModule( 'SidebarModule' );
+        $this->registerModule( 'HeroModule' );
+        $this->registerModule( 'ImageModule' );
+        $this->registerModule( 'GalleryModule' );
+        $this->registerModule( 'LoopModule' );
+        $this->registerModule( 'CarouselModule' );
+        $this->registerModule( 'CalloutModule' );
+        $this->registerModule( 'EditorModule' );
+        $this->registerModule( 'VideoModule' );
+
+        // Register Rows.
+        $this->registerRow( 'cfct_row_a' );
+        $this->registerRow( 'cfct_row_ab' );
+        $this->registerRow( 'cfct_row_ab_c' );
+        $this->registerRow( 'cfct_row_a_bc' );
+        $this->registerRow( 'cfct_row_abc' );
+        $this->registerRow( 'RowFourColumns' );
+
+      }
+
+      /**
+       * @return array
+       */
       public function set_post_types() {
         return $this->post_types;
       }
-      
-      public function set_module_directories() {
+
+      /**
+       * Row Directories.
+       *
+       * @param $_dirs
+       *
+       * @return array|string
+       */
+      public function set_row_directories( $_dirs ) {
+        return $this->row_directories;
+      }
+
+      /**
+       * Module Directories.
+       *
+       * @param $_dirs
+       *
+       * @return array|string
+       */
+      public function set_module_directories( $_dirs ) {
         return $this->module_directories;
       }
 
@@ -202,47 +265,58 @@ namespace UsabilityDynamics\Theme {
       private function bootstrap() {
 
         add_filter( 'cfct-block-c6-12-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-4', 'col-sm-4', 'col-lg-4', 'col-first' ), $classes );
+          return array_merge( array( 'column', 'col-md-4', 'col-sm-4', 'col-lg-4' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-34-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-4', 'col-sm-4', 'col-lg-4', 'col-middle' ), $classes );
+          return array_merge( array( 'column', 'col-md-4', 'col-sm-4', 'col-lg-4' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-56-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-4', 'col-sm-6', 'col-lg-4', 'col-last' ), $classes );
+          return array_merge( array( 'column', 'col-md-4', 'col-sm-6', 'col-lg-4' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-123-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-6', 'col-sm-6', 'col-lg-6', 'col-first' ), $classes );
+          return array_merge( array( 'column', 'col-md-6', 'col-sm-6', 'col-lg-6' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-456-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-6', 'col-sm-6', 'col-lg-6', 'col-last' ), $classes );
+          return array_merge( array( 'column', 'col-md-6', 'col-sm-6', 'col-lg-6' ), $classes );
         } );
 
         add_filter( 'cfct-block-c4-12-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-6', 'col-sm-6', 'col-lg-6', 'col-first' ), $classes );
+          return array_merge( array( 'column', 'col-md-6', 'col-sm-6', 'col-lg-6' ), $classes );
         } );
 
         add_filter( 'cfct-block-c4-34-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-6', 'col-sm-6', 'col-lg-6', 'col-last' ), $classes );
+          return array_merge( array( 'column', 'col-md-6', 'col-sm-6', 'col-lg-6' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-1234-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-8', 'col-sm-12', 'col-lg-8', 'col-first' ), $classes );
+          return array_merge( array( 'column', 'col-md-8', 'col-sm-12', 'col-lg-8' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-3456-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-8', 'col-sm-12', 'col-lg-8', 'col-last' ), $classes );
+          return array_merge( array( 'column', 'col-md-8', 'col-sm-12', 'col-lg-8' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-123456-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-12', 'col-sm-12', 'col-lg-12', 'col-first', 'col-last', 'col-full-width' ), $classes );
+          return array_merge( array( 'column', 'col-md-12', 'col-sm-12', 'col-lg-12' ), $classes );
         } );
 
         add_filter( 'cfct-block-c4-1234-classes', function ( $classes ) {
-          return array_merge( array( 'col-md-12', 'col-sm-12', 'col-lg-12', 'col-first', 'col-last', 'col-full-width' ), $classes );
+          return array_merge( array( 'column', 'col-md-12', 'col-sm-12', 'col-lg-12' ), $classes );
+        } );
+
+        add_filter( 'cfct-block-c8-12-classes', function ( $classes ) {
+
+          return array_merge( array(
+            'column',
+            'col-md-12',
+            'col-sm-12',
+            'col-lg-12',
+          ), $classes );
+
         } );
 
       }
@@ -266,14 +340,38 @@ namespace UsabilityDynamics\Theme {
           list( $classname, $args ) = func_get_args();
         }
 
-
         if( $cfct_build instanceof \cfct_build_common ) {
-
           $cfct_build->template->register_type( 'module', $classname, $args );
-
           return true;
         } else {
           return false;
+        }
+
+      }
+
+      /**
+       * Register Row Calss
+       *
+       * @param       $classname
+       * @param array $args
+       *
+       * @return bool
+       */
+      public function registerRow( $classname, $args = array() ) {
+        global $cfct_build;
+
+        _doing_it_wrong( 'register', __( 'Row registration called too early, before init.' ), 0 );
+
+        if( func_num_args() > 1 && !is_array( $args ) ) {
+          _deprecated_argument( __FUNCTION__, '1.0.2', 'Use of the <code>$id</code> parameter when registering a module has been deprecated. Pass only the module\'s classname when registering your module' );
+          $args = array();
+          list( $classname, $args ) = func_get_args();
+        }
+
+        if( $cfct_build instanceof \cfct_build_common ) {
+          $cfct_build->template->register_type( 'row', $classname );
+
+          return true;
         }
 
       }
