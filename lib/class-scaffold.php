@@ -386,10 +386,15 @@ namespace UsabilityDynamics\Theme {
 
           if( $name === 'post-thumbnail' ) {
             add_theme_support( 'post-thumbnails' );
-            set_post_thumbnail_size( $settings[ 'width' ], $settings[ 'height' ], isset( $settings[ 'crop' ] ) ? $settings[ 'crop' ] : false );
-          } else {
-            add_image_size( $name, $settings[ 'width' ], isset( $settings[ 'height' ] ) ? $settings[ 'height' ] : 9999, isset( $settings[ 'crop' ] ) ? $settings[ 'crop' ] : false );
           }
+
+          $_wp_additional_image_sizes[ $name ] = array_filter(array(
+            'description' => $settings[ 'description' ],
+            'post_types' => $settings[ 'post_types' ],
+            'width' => absint( $settings[ 'width' ] ),
+            'height' => absint( $settings[ 'heigt' ] ),
+            'crop' => (bool) $settings[ 'crop' ]
+          ));
 
         }
 
