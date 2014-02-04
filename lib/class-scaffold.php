@@ -333,6 +333,27 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
+       * Register Menus
+       *
+       * @param array $options
+       */
+      public function menus( $options = array() ) {
+
+        foreach( (array) $options as $name => $config ) {
+
+          if( $config && is_array( $config ) ) {
+            register_nav_menu( $name, $config[ 'name' ] );
+          }
+
+          if( !$config || is_null( $config ) ) {
+            unregister_nav_menu( $name );
+          }
+
+        }
+
+      }
+
+      /**
        * Enables Theme Support for Features.
        *
        * @param array $options
