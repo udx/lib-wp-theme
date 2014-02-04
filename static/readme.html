@@ -125,7 +125,14 @@ class MyTheme extends \UsabilityDynamics\Theme\Scaffold {
 
   public function __construct() {
 
-    parent::__construct();
+    $this-&gt;settings();
+    $this-&gt;dynamic();
+    $this-&gt;rewrites();
+    $this-&gt;api();
+    $this-&gt;media();
+    $this-&gt;customizer();
+    $this-&gt;upgrade();
+    $this-&gt;supports();
 
   }
 
