@@ -125,7 +125,7 @@ namespace UsabilityDynamics\Theme {
         } );
 
         add_filter( 'cfct-build-module-url-unknown', function ( $url, $module, $file_key ) {
-          return plugins_url( '/modules' . $file_key . '/', __DIR__ );
+          return trailingslashit( plugins_url( $file_key, $module ) );
         }, 10, 3 );
 
         add_filter( 'cfct-build-page-options', function () {
@@ -146,8 +146,10 @@ namespace UsabilityDynamics\Theme {
         } );
 
         add_filter( 'cfct-build-module-class', function ( $class ) {
-          return trim( $class . '' );
+          return 'module';
         } );
+
+        add_filter( 'cfct-block-template', array( $this, 'block_template' ), 10, 2 );
 
         add_action( 'cfct-widget-module-registered', array( get_class(), '_theme_admin_form' ), 10, 2 );
 
@@ -166,6 +168,25 @@ namespace UsabilityDynamics\Theme {
 
         return $this;
 
+      }
+
+      public function module_display( $base, $data ) {
+
+        return $base;
+        //die( '<pre>' . print_r( $base, true ) . '</pre>' );
+
+      }
+
+      /**
+       * Module Container Block
+       *
+       * @param $template
+       * @param $builder
+       *
+       * @return string
+       */
+      public function block_template( $template, $builder ) {
+        return '<div class="{class}"><section class="module-container">{modules}</section></div>';
       }
 
       public function init() {
@@ -205,7 +226,7 @@ namespace UsabilityDynamics\Theme {
       /**
        * @return array
        */
-      public function set_post_types() {
+      public function module_html( $ret, $data ) {
         return $this->post_types;
       }
 
