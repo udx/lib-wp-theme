@@ -170,11 +170,23 @@ namespace UsabilityDynamics\Theme {
 
       }
 
+      /**
+       * @param $types
+       *
+       * @return array
+       */
+      public function set_post_types( $types ) {
+        return array_unique( array_merge( (array) $types, (array) $this->post_types ) );
+      }
+
+      /**
+       * @param $base
+       * @param $data
+       *
+       * @return mixed
+       */
       public function module_display( $base, $data ) {
-
         return $base;
-        //die( '<pre>' . print_r( $base, true ) . '</pre>' );
-
       }
 
       /**
