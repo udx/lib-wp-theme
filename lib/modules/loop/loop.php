@@ -221,7 +221,7 @@ if( !class_exists( 'LoopModule' ) && class_exists( 'cfct_build_module' ) ) {
      * @return string HTML
      */
     protected function get_custom_loop( $data, $args = array() ) {
-      global $post, $flawless;
+      global $post;
 
       $_post = $post;
 
@@ -254,16 +254,6 @@ if( !class_exists( 'LoopModule' ) && class_exists( 'cfct_build_module' ) ) {
         ?>
         <div data-post-id="post-<?php the_ID(); ?>" <?php post_class( 'clearfix cb_custom_entry ' . ( $args[ 'this_count' ] % 2 ? 'odd' : 'even' ) ); ?> object_count="<?php echo $args[ 'this_count' ] % 2 ? 'odd' : 'even'; ?>">
           <div class="cfct-module post_listing_inner" element_type="carrington">
-
-          <?php if( $args[ 'show_title' ] == 'yes' ) { ?>
-            <?php flawless_page_title( array( 'link' => true, 'before' => '<h2 class="entry-title">', 'after' => '</h2>' ) ); ?>
-          <?php } ?>
-
-          <?php echo flawless_theme::get_template_part( 'entry-meta-header', get_post_format() ); ?>
-
-          <?php echo flawless_theme::get_template_part( 'entry-content', get_post_format() ); ?>
-
-          <?php echo flawless_theme::get_template_part( 'entry-meta-footer', get_post_format() ); ?>
 
           </div>
         </div>

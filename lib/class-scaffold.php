@@ -389,11 +389,11 @@ namespace UsabilityDynamics\Theme {
           }
 
           $_wp_additional_image_sizes[ $name ] = array_filter(array(
-            'description' => $settings[ 'description' ],
-            'post_types' => $settings[ 'post_types' ],
-            'width' => absint( $settings[ 'width' ] ),
-            'height' => absint( $settings[ 'heigt' ] ),
-            'crop' => (bool) $settings[ 'crop' ]
+            'description' => isset( $settings[ 'description' ] ) ? $settings[ 'description' ]  : '',
+            'post_types' => isset( $settings[ 'post_types' ] ) ? $settings[ 'post_types' ] : array( 'page' ),
+            'width' => isset( $settings[ 'width' ] ) ? absint( $settings[ 'width' ] ) : null,
+            'height' => isset( $settings[ 'height' ] ) ? absint( $settings[ 'height' ] ) : null,
+            'crop' => isset( $settings[ 'crop' ] ) ? (bool) $settings[ 'crop' ] : false
           ));
 
         }
