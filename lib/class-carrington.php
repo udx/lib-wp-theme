@@ -207,8 +207,11 @@ namespace UsabilityDynamics\Theme {
         $this->_builder = $cfct_build;
 
         // Remove default Scripts and Styles.
-        wp_deregister_script( 'cfct-build-js' );
+        wp_deregister_script( 'cfct-build-js');
         wp_deregister_style( 'cfct-build-css' );
+
+        // wp_register_script( 'cfct-build-js',  plugins_url( '/scripts/theme.js', dirname( __DIR__ ))  );
+        // wp_register_style( 'cfct-build-css',  plugins_url( '/styles/theme.css', dirname( __DIR__ ))  );
 
         // Import. (note sure why this isn't called automatically).
         $this->_builder->import_included_rows();

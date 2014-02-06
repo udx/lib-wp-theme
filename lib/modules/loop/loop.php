@@ -259,17 +259,18 @@ if( !class_exists( 'LoopModule' ) && class_exists( 'cfct_build_module' ) ) {
         </div>
         <?php
 
-        $item = apply_filters( 'cfct-build-loop-item', $item, $data, $args, $query ); // @TODO deprecate in 1.2? doesn't scale well when extending the loop object
+        //$item = apply_filters( 'cfct-build-loop-item', $item, $data, $args, $query ); // @TODO deprecate in 1.2? doesn't scale well when extending the loop object
 
-        echo apply_filters( $this->id_base . '-loop-item', $item, $data, $args, $query );
+        //echo apply_filters( $this->id_base . '-loop-item', $item, $data, $args, $query );
+        //echo apply_filters( $this->id_base . '-loop-item', $item );
 
       }
 
       $html = ob_get_clean();
       $this->reset_global_post();
 
-      $html = apply_filters( 'cfct-build-loop-html', $html, $data, $args, $query ); // @TODO deprecate in 1.2? doesn't scale well when extending the loop object
-      $html = apply_filters( $this->id_base . 'loop-html', $html, $data, $args, $query );
+      $html = @apply_filters( 'cfct-build-loop-html', $html, $data, $args, $query ); // @TODO deprecate in 1.2? doesn't scale well when extending the loop object
+      $html = @apply_filters( $this->id_base . 'loop-html', $html, $data, $args, $query );
 
       $post = $_post;
 
@@ -772,7 +773,7 @@ if( !class_exists( 'LoopModule' ) && class_exists( 'cfct_build_module' ) ) {
      *
      * @return null
      */
-    public function text() {
+    public function text( $data ) {
       return null;
     }
 
