@@ -53,6 +53,14 @@ namespace UsabilityDynamics\Theme {
       public $settings;
 
       /**
+       * Structure.
+       *
+       * @param $structure
+       * @var string
+       */
+      public $structure;
+      
+      /**
        * Initializes Theme.
        *
        * @param array $options
@@ -299,8 +307,30 @@ namespace UsabilityDynamics\Theme {
           'taxonomies' => array(), // Taxonomies
         ) );
         
-        \UsabilityDynamics\Structure::define( $options );
+        $this->structure = \UsabilityDynamics\Structure::define( $options );
         
+        return $this->structure;
+      }
+      
+      /**
+       * Returns post data including meta data specified in structure
+       *
+       * @author peshkov@UD
+       */
+      public function get_post( $post_id, $filter = false ) {
+    
+        $post = get_post( $post_id, ARRAY_A, $filter );
+      
+        if( $post && !is_wp_error( $post ) && key_exists( $post[ 'post_type' ], (array)$this->structure ) ) {
+        
+          // Get meta data
+          foreach( (array)$this->structure[ $post[ 'post_type' ] ][ 'meta' ] as $key ) {
+            $post[ $key ] = get_post_meta( $post_id, $key, true );
+          }
+        
+        }
+      
+        return $post;
       }
 
       /**
