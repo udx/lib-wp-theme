@@ -40,8 +40,6 @@ if( !class_exists( 'CarouselModule' ) && class_exists( 'cfct_build_module' ) ) {
       ) );
     }
 
-// Display
-
     /**
      * contains capacity to have pre-defined links & image urls,
      * though that functionality is not exposed in the admin
@@ -109,23 +107,12 @@ if( !class_exists( 'CarouselModule' ) && class_exists( 'cfct_build_module' ) ) {
       ), $car_opts );
 
       // Don't use json_encode because it quotes object literals, turning them into strings.
-      $jobj = array();
-      foreach( $js_opts as $key => $value ) {
-        $jobj[ ] = $key . ':' . $value;
-      }
-      $jobj = '{' . implode( ',', $jobj ) . ' }';
-
-      $js_init = apply_filters( 'cfct-carousel-js-init', '
-			<script type="text/javascript">
-				jQuery(function($) {
-					$("#carousel-' . $data[ 'module_id' ] . ' .car-content ul").cycle(' . $jobj . ');
-				});
-			</script>', $data[ 'module_id' ], $car_opts, $js_opts );
+      $jobj    = array();
+      $js_init = apply_filters( 'cfct-carousel-js-init', '</script>', $data[ 'module_id' ], $car_opts, array() );
 
       return $this->load_view( $data, compact( 'items', 'control_layout_order', 'image_size', 'car_opts', 'js_init' ) );
-    }
 
-// Admin
+    }
 
     public function text( $data ) {
       return 'Carousel';
@@ -599,25 +586,6 @@ if( !class_exists( 'CarouselModule' ) && class_exists( 'cfct_build_module' ) ) {
       return $js;
     }
 
-    public function js() {
-      return '
-				/**
-				 * Carousel Callbacks
-				 */
-				cfctCarousel = {};
-				cfctCarousel.PagerClick = function(i, el) {
-					var _this = $(el);
-					var _overlay = _this.parents(".carousel").find(".car-overlay");
-					$(".car-header .car-title", _overlay).html($(".car-entry-title", _this).html());
-					$(".car-description", _overlay).html( $(".car-entry-description", _this).html());
-					$(".car-cta a", _overlay).attr("href", $(".car-entry-cta a", _this).attr("href"));
-				};
-				cfctCarousel.PagerAnchorBuilder = function(i, el) {
-					return "<li><a href=\"#\">" + (i+1) + "</a></li>";
-				};
-			';
-    }
-
     /**
      * Formats the data for admin editing
      *
@@ -653,8 +621,6 @@ if( !class_exists( 'CarouselModule' ) && class_exists( 'cfct_build_module' ) ) {
 
       return $html;
     }
-
-// Search Request
 
     public function _handle_carousel_request() {
       if( !empty( $_POST[ 'carousel_action' ] ) ) {
@@ -732,8 +698,6 @@ if( !class_exists( 'CarouselModule' ) && class_exists( 'cfct_build_module' ) ) {
     protected function filter_post_types( $var ) {
       return !in_array( $var, array( 'attachment', 'revision', 'nav_menu_item' ) );
     }
-
-// Content Move Helpers
 
     public function get_referenced_ids( $data ) {
       $references = array();

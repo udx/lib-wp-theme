@@ -224,6 +224,8 @@ namespace UsabilityDynamics\Theme {
         $this->registerModule( 'CalloutModule' );
         $this->registerModule( 'EditorModule' );
         $this->registerModule( 'VideoModule' );
+        $this->registerModule( 'DividerModule' );
+        $this->registerModule( 'NoticeModule' );
 
         // Register Rows.
         $this->registerRow( 'cfct_row_a' );
