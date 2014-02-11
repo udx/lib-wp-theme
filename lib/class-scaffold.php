@@ -88,7 +88,8 @@ namespace UsabilityDynamics\Theme {
         ));
 
         $options = (object) Utility::extend( $options, array(
-          'domain' => $this->domain
+          'domain' => $this->domain,
+          'languages' => get_template_directory() . '/static/languages'
         ));
 
         // Set Instance Settings.
@@ -102,6 +103,11 @@ namespace UsabilityDynamics\Theme {
         // @example http://discodonniepresents.com/manage/?debug=debug_rewrite_rules
         if( is_admin() && @$_GET[ 'debug' ] === 'debug_rewrite_rules' ) {
           die( json_encode(get_option( 'rewrite_rules' )) );
+        }
+
+        // Make theme available for translation
+        if( is_dir( $options->languages ) ) {
+          load_theme_textdomain( $this->domain, $options->languages );
         }
 
         $this->_upgrade();
@@ -154,7 +160,11 @@ namespace UsabilityDynamics\Theme {
 
           }
 
-            wp_register_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
+          // Store Script Settings.
+          $this->set( '_scripts', array( $settings->name => $settings ));
+
+          // Register Script.
+          wp_register_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
 
         }
 
@@ -166,6 +176,7 @@ namespace UsabilityDynamics\Theme {
        * @param array $options
        */
       public function styles( $options = array() ) {
+
         foreach( (array) $options as $name => $_settings ) {
 
           $settings = array(
@@ -192,6 +203,10 @@ namespace UsabilityDynamics\Theme {
 
           }
 
+          // Store Script Settings.
+          $this->set( '_styles', array( $settings->name => $settings ));
+
+          // Register Style.
           wp_register_style( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->media );
 
         }

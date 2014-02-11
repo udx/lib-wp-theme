@@ -270,7 +270,17 @@ namespace UsabilityDynamics\Theme {
        * @return array|string
        */
       public function set_row_directories( $_dirs ) {
-        return $this->row_directories;
+
+        $_verified = array();
+
+        foreach( (array) $this->row_directories as $directory ) {
+          if( is_dir( $directory ) ) {
+            $_verified[] = $directory;
+          }
+        }
+
+        return $_verified;
+
       }
 
       /**
