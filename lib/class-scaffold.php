@@ -3,7 +3,7 @@
  * Theme Scaffolding.
  *
  * @author team@UD
- * @version 0.2.4
+ * @version 0.2.5
  * @namespace UsabilityDynamics
  * @module Theme
  * @author potanin@UD
@@ -158,17 +158,22 @@ namespace UsabilityDynamics\Theme {
           );
 
           if( is_array( $_settings ) ) {
-            $settings = Utility::extend( $settings, $_settings );
+            $settings = (object) Utility::extend( $settings, $_settings );
           }
 
           if( is_string( $_settings ) ) {
-            $settings = Utility::extend( $settings, array(
+
+            $settings = (object) Utility::extend( $settings, array(
               'name' => $name,
-              'url' => $_settings
-            ) );
+              'url' => $_settings,
+              'version' => $this->version,
+              'footer' => true,
+              'deps' => array()
+            ));
+
           }
 
-          // wp_register_script( $name, $settings[ 'url' ], $settings[ 'deps' ], $settings[ 'version' ], $settings[ 'footer' ] );
+            wp_register_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
 
         }
 
@@ -191,17 +196,17 @@ namespace UsabilityDynamics\Theme {
           );
 
           if( is_array( $_settings ) ) {
-            $settings = Utility::extend( $settings, $_settings );
+            $settings = (object) Utility::extend( $settings, $_settings );
           }
 
           if( is_string( $_settings ) ) {
-            $settings = Utility::extend( $settings, array(
+            $settings = (object) Utility::extend( $settings, array(
               'name' => $name,
               'url' => $_settings
             ) );
           }
 
-          // wp_register_style( $name, $settings[ 'url' ], $settings[ 'deps' ], $settings[ 'version' ], $settings[ 'footer' ] );
+          wp_register_style( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
 
         }
 
@@ -283,14 +288,43 @@ namespace UsabilityDynamics\Theme {
       /**
        * Add Header Tag.
        *
-       * @todo apply_filters( 'disco::head' );
-       * @todo add_action( 'wp_head', function () {});
        *
-       * @temporary
        */
       public function head( $options = array() ) {
 
-        // add_action( 'wp_head', function () {});
+        // Save "head" options.
+        $this->set( '_head', (object) $options );
+
+        add_action( 'wp_head', array( $this, 'wp_head' ) );
+
+      }
+
+      /**
+       * Print Head Tags.
+       *
+       * @since 0.2.5
+       * @author potanin@UD
+       * @method wp_head
+       */
+      public function wp_head() {
+
+        $output = array();
+
+        foreach( (array) $this->get( '_head' ) as $data ) {
+
+          $attributes = array();
+
+          foreach( $data as $key => $value ) {
+            if( $key != 'tag' ) {
+              $attributes[] = $key . '="' . $value . '"';
+            }
+          }
+
+          $output[] = '<' . $data[ 'tag' ] . ' ' . implode( ' ', $attributes ) . '></' . $data[ 'tag' ] . '>';
+
+        }
+
+        echo implode( "\n", $output );
 
       }
 
