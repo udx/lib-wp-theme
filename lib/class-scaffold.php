@@ -689,6 +689,7 @@ namespace UsabilityDynamics\Theme {
         // Define New Rules.
         $new_rules = array(
           '^assets/styles/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
+          '^assets/styles/fonts/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=font&asset_slug=$matches[1]',
           '^assets/images/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=image&asset_slug=$matches[1]',
           '^assets/scripts/([^/]+)/?' => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
           '^assets/models/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
@@ -728,7 +729,27 @@ namespace UsabilityDynamics\Theme {
           return;
         }
 
-        if( is_file( $_path = trailingslashit( get_stylesheet_directory() ) . trailingslashit( get_query_var( 'asset_type' ) . 's' ) . get_query_var( 'asset_slug' ) ) ) {
+        switch( get_query_var( 'asset_type' ) ) {
+
+          case 'style':
+            $_path = 'styles';
+          break;
+
+          case 'font':
+            $_path = 'styles/fonts';
+            break;
+
+          case 'script':
+            $_path = 'scripts';
+          break;
+
+          case 'image':
+            $_path = 'images';
+          break;
+
+        }
+
+        if( is_file( $_path = trailingslashit( get_stylesheet_directory() ) . trailingslashit( $_path ) . get_query_var( 'asset_slug' ) ) ) {
           $_data = file_get_contents( $_path );
         };
 
@@ -736,6 +757,10 @@ namespace UsabilityDynamics\Theme {
         $_data = apply_filters( 'udx:theme:public:' . get_query_var( 'asset_type' ) . ':' . get_query_var( 'asset_slug' ), isset( $_data ) ? $_data : null, get_query_var( 'asset_slug' ) );
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'script' ) {
+          $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
+        }
+
+        if( isset( $_data ) && get_query_var( 'asset_type' ) === 'font' ) {
           $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
         }
 
@@ -870,6 +895,36 @@ namespace UsabilityDynamics\Theme {
         }
 
       }
+
+      /**
+       * Uses back-trace to figure out which sidebar was called from the sidebar.php file
+       *
+       * WordPress does not provide an easy way to figure out the type of sidebar that was called from within the sidebar.php file, so we backtrace it.
+       *
+       * @author potanin@UD
+       */
+      public function detect_sidebar_type() {
+
+        $backtrace = debug_backtrace();
+
+        if( !is_array( $backtrace ) ) {
+          return false;
+        }
+
+        foreach( (array) $backtrace as $item ) {
+
+          if( $item[ 'function' ] == $this->id . '_widget_area' ) {
+            return $item[ 'args' ][0];
+          } elseif ( $item[ 'function' ] == 'get_sidebar' ) {
+            return $item[ 'args' ][0];
+          }
+
+        }
+
+        return false;
+
+      }
+
 
     }
 
