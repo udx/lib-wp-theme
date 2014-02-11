@@ -100,6 +100,8 @@ namespace UsabilityDynamics\Theme {
         add_action( 'template_redirect', array( $this, '_redirect' ) );
         add_filter( 'intermediate_image_sizes_advanced', array( $this, 'image_sizes' ));
 
+        add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_scripts' ), 500 );
+
         // @example http://discodonniepresents.com/manage/?debug=debug_rewrite_rules
         if( is_admin() && @$_GET[ 'debug' ] === 'debug_rewrite_rules' ) {
           die( json_encode(get_option( 'rewrite_rules' )) );
@@ -134,6 +136,8 @@ namespace UsabilityDynamics\Theme {
        */
       public function scripts( $options = array() ) {
 
+        wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), isset( $this->version ) ? $this->version : '3.0.0', true );
+
         foreach( (array) $options as $name => $_settings ) {
 
           $settings = array(
@@ -163,9 +167,17 @@ namespace UsabilityDynamics\Theme {
           // Store Script Settings.
           $this->set( '_scripts', array( $settings->name => $settings ));
 
-          // Register Script.
-          wp_register_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
+        }
 
+      }
+
+      /**
+       *
+       */
+      public function _enqueue_scripts() {
+
+        foreach( (array) $this->get( '_scripts' ) as $_name => $settings ) {
+          wp_register_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
         }
 
       }
@@ -296,7 +308,7 @@ namespace UsabilityDynamics\Theme {
         // Save "head" options.
         $this->set( '_head', (object) $options );
 
-        add_action( 'wp_head', array( $this, 'wp_head' ) );
+        add_action( 'wp_head', array( $this, '_head_tags' ) );
 
       }
 
@@ -307,7 +319,7 @@ namespace UsabilityDynamics\Theme {
        * @author potanin@UD
        * @method wp_head
        */
-      public function wp_head() {
+      public function _head_tags() {
 
         $output = array();
 
@@ -315,13 +327,23 @@ namespace UsabilityDynamics\Theme {
 
           $attributes = array();
 
-          foreach( $data as $key => $value ) {
+          foreach( (array) $data as $key => $value ) {
             if( $key != 'tag' ) {
               $attributes[] = $key . '="' . $value . '"';
             }
           }
 
-          $output[] = '<' . $data[ 'tag' ] . ' ' . implode( ' ', $attributes ) . '></' . $data[ 'tag' ] . '>';
+          if( $data[ 'tag' ] === 'meta' ) {
+            $output[] = '<meta ' . implode( ' ', $attributes ) . ' />';
+          }
+
+          if( $data[ 'tag' ] === 'link' ) {
+            $output[] = '<link ' . implode( ' ', $attributes ) . ' />';
+          }
+
+          if( $data[ 'tag' ] === 'script' ) {
+            $output[] = '<script ' . implode( ' ', $attributes ) . '></script>';
+          }
 
         }
 
@@ -702,9 +724,6 @@ namespace UsabilityDynamics\Theme {
       public function _redirect( $query_vars ) {
         global $wp_query;
 
-        $asset_slug = get_query_var( 'asset_slug' );
-        $asset_type = get_query_var( 'asset_type' );
-
         if( !get_query_var( 'is_asset' ) ) {
           return;
         }
@@ -712,6 +731,9 @@ namespace UsabilityDynamics\Theme {
         if( is_file( $_path = trailingslashit( get_stylesheet_directory() ) . trailingslashit( get_query_var( 'asset_type' ) . 's' ) . get_query_var( 'asset_slug' ) ) ) {
           $_data = file_get_contents( $_path );
         };
+
+        // Data Filter.
+        $_data = apply_filters( 'udx:theme:public:' . get_query_var( 'asset_type' ) . ':' . get_query_var( 'asset_slug' ), isset( $_data ) ? $_data : null, get_query_var( 'asset_slug' ) );
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'script' ) {
           $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
@@ -746,9 +768,6 @@ namespace UsabilityDynamics\Theme {
        */
       private function _serve_public( $type = '', $name, $data = '' ) {
 
-        // Configure Data.
-        $data = apply_filters( 'udx:theme:public:' . $type . ':data', $data, $name );
-
         // Configure Headers.
         $headers = apply_filters( 'udx:theme:public:' . $type . 'headers', array(
             'Cache-Control'   => 'public',
@@ -774,12 +793,17 @@ namespace UsabilityDynamics\Theme {
         }
 
         // Set Headers.
-        foreach( (array) $headers as $name => $field_value ) {
-          @header( "{$name}: {$field_value}" );
+        foreach( (array) $headers as $_key => $field_value ) {
+          @header( "{$_key}: {$field_value}" );
         }
 
         // WordPress will try to make it 404.
         http_response_code( 200 );
+
+        if( is_array( $data ) || is_object( $data ) ) {
+          //$data = 'define( "' . $name . '", ' . json_encode( $data ) . ');';
+          $data = 'define(' . json_encode( $data ) . ');';
+        }
 
         // Output Data.
         die( $data );
