@@ -281,7 +281,17 @@ namespace UsabilityDynamics\Theme {
        * @return array|string
        */
       public function set_module_directories( $_dirs ) {
-        return $this->module_directories;
+
+        $_verified = array();
+
+        foreach( (array) $this->module_directories as $directory ) {
+          if( is_dir( $directory ) ) {
+            $_verified[] = $directory;
+          }
+        }
+
+        return $_verified;
+
       }
 
       /**

@@ -97,6 +97,7 @@ namespace UsabilityDynamics\Theme {
         add_filter( 'pre_update_option_rewrite_rules', array( $this, '_update_option_rewrite_rules' ), 1 );
         add_action( 'query_vars', array( $this, '_query_vars' ) );
         add_action( 'template_redirect', array( $this, '_redirect' ) );
+        add_filter( 'intermediate_image_sizes_advanced', array( $this, 'image_sizes' ));
 
         // @example http://discodonniepresents.com/manage/?debug=debug_rewrite_rules
         if( is_admin() && @$_GET[ 'debug' ] === 'debug_rewrite_rules' ) {
@@ -171,7 +172,7 @@ namespace UsabilityDynamics\Theme {
             'name' => $name,
             'url' => '',
             'version' => $this->version,
-            'footer' => true,
+            'media' => 'all',
             'deps' => array()
           );
 
@@ -180,13 +181,18 @@ namespace UsabilityDynamics\Theme {
           }
 
           if( is_string( $_settings ) ) {
+
             $settings = (object) Utility::extend( $settings, array(
               'name' => $name,
-              'url' => $_settings
-            ) );
+              'url' => $_settings,
+              'version' => $this->version,
+              'media' => 'all',
+              'deps' => array()
+            ));
+
           }
 
-          wp_register_style( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
+          wp_register_style( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->media );
 
         }
 
@@ -348,7 +354,6 @@ namespace UsabilityDynamics\Theme {
       
         return $post;
       }
-
 
       /**
        * Display Nav Menu.
@@ -543,6 +548,71 @@ namespace UsabilityDynamics\Theme {
         }
 
         return $options;
+
+      }
+
+      /**
+       * Return Post Type Image Sizes
+       *
+       * @todo Take thumbnail, large and medium into account.
+       *
+       * @filter intermediate_image_sizes_advanced
+       * @param $_sizes
+       * @return array
+       */
+      public function image_sizes( $_sizes ) {
+        global $_wp_additional_image_sizes;
+
+        $_available_sizes = $_wp_additional_image_sizes;
+
+        $_available_sizes[ 'thumbnail' ] = array(
+          'width'  => get_option( "thumbnail_size_w" ),
+          'height' => get_option( "thumbnail_size_h" ),
+          'crop'   => get_option( "thumbnail_crop" )
+        );
+
+        $_available_sizes[ 'large' ] = array(
+          'width'  => get_option( "large_size_w" ),
+          'height' => get_option( "large_size_h" ),
+          'crop'   => get_option( "large_crop" )
+        );
+
+        $_available_sizes[ 'medium' ] = array(
+          'width'  => get_option( "medium_size_w" ),
+          'height' => get_option( "medium_size_h" ),
+          'crop'   => get_option( "medium_crop" )
+        );
+
+        // Upload attachment Unassociated with post.
+        if( !isset( $_POST[ 'action' ] ) && isset( $_POST[ 'post_id' ] ) && $_POST[ 'post_id' ] == 0 ) {
+          return $_sizes;
+        }
+
+        // Uploading image to post.
+        if( isset( $_POST[ 'action' ] ) && $_POST[ 'action' ] === 'upload-attachment' && $_POST[ 'post_id' ] ) {
+
+          $_allowed = array();
+
+          foreach( (array) $_available_sizes as $size => $settings ) {
+
+            // Post type sizes not configured, allow by deafult.
+            if( !isset( $settings[ 'post_types' ] ) ) {
+              $_allowed[ $size ] = $settings;
+            }
+
+            // Size Allowed.
+            if( isset( $settings[ 'post_types' ] ) && in_array( $_post_type, (array) $settings[ 'post_type' ] ) ) {
+              $_allowed[ $size ] = $settings;
+            }
+
+          }
+
+          // Return Image Sizes for Post Type.
+          return $_allowed;
+
+        }
+
+        return $_sizes;
 
       }
 
