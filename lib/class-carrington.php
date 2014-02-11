@@ -53,6 +53,15 @@ namespace UsabilityDynamics\Theme {
 
       public function __construct( $args = array() ) {
 
+        //$_value =  $wpdb->get_var( "SELECT meta_value FROM {$wpdb->postmeta} WHERE post_id = 13 and meta_key = '_cfct_build_data';" );
+        //$_value = utf8_decode( utf8_encode( $_value ));
+
+        //die($_value);
+        //$test = \UsabilityDynamics\Utility::repair_serialized_array( $_value );
+
+        //die( json_encode( $test ));
+        //die( '<pre>' . print_r( $test, true ) . '</pre>' );
+
         $args = Utility::defaults( $args, array(
           'bootstrap'          => true,
           'templates'          => true,
@@ -97,6 +106,7 @@ namespace UsabilityDynamics\Theme {
 
         add_filter( 'cfct-build-enabled-post-types', array( $this, 'set_post_types' ) );
 
+        add_filter( 'cfct-get-postmeta', array( $this, 'get_postmeta' ) );
         add_filter( 'cfct-row-dirs', array( $this, 'set_row_directories' ) );
         add_filter( 'cfct-module-dirs', array( $this, 'set_module_directories' ) );
 
@@ -170,6 +180,14 @@ namespace UsabilityDynamics\Theme {
 
       }
 
+      public function get_postmeta( $post_data, $post_id = null ) {
+
+        //die( '<pre>' . print_r( $post_data, true ) . '</pre>' );
+        //die( 'sdfs' . $post_data );
+
+        return $post_data;
+
+      }
       /**
        * @param $types
        *

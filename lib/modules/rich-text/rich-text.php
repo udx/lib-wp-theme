@@ -6,8 +6,13 @@
  * Good for displaying raw HTML and/or JavaScript
  */
 if( !class_exists( 'EditorModule' ) ) {
+
+  /**
+   * Class EditorModule
+   */
   class EditorModule extends cfct_build_module {
-    protected $_deprecated_id = 'cfct-rich-text-module'; // deprecated property, not needed for new module development
+
+    protected $_deprecated_id = 'cfct_rich_text';
 
     // remove padding from the popup-content form
     protected $admin_form_fullscreen = true;

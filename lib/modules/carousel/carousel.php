@@ -2,6 +2,9 @@
 
 if( !class_exists( 'CarouselModule' ) && class_exists( 'cfct_build_module' ) ) {
   class CarouselModule extends cfct_build_module {
+
+    protected $_deprecated_id = 'cfct_module_carousel';
+
     protected $context_excludes = array(
       'multi-module'
     );
@@ -9,11 +12,14 @@ if( !class_exists( 'CarouselModule' ) && class_exists( 'cfct_build_module' ) ) {
     protected $js_base = 'cfct_car';
 
     public function __construct() {
+
       $opts = array(
         'description' => __( 'Display an Image Carousel', 'carrington-build' ),
         'icon'        => plugins_url( '/icon.png', __DIR__ )
       );
+
       parent::__construct( 'cfct-module-carousel', __( 'Carousel', 'carrington-build' ), $opts );
+
       add_filter( 'wp_ajax_cfct_carousel_post_search', array( $this, '_handle_carousel_request' ) );
 
       //wp_register_script( 'jquery-cycle', $this->get_url() . 'js/jquery.cycle.js', array( 'jquery' ), '1.0' );
