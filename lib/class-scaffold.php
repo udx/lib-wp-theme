@@ -95,6 +95,7 @@ namespace UsabilityDynamics\Theme {
         // Set Instance Settings.
         $this->set( '_initialize', $options );
 
+        add_filter( 'admin_menu', array( $this, 'admin_menu' ) );
         add_filter( 'pre_update_option_rewrite_rules', array( $this, '_update_option_rewrite_rules' ), 1 );
         add_action( 'query_vars', array( $this, '_query_vars' ) );
         add_action( 'template_redirect', array( $this, '_redirect' ) );
@@ -422,6 +423,24 @@ namespace UsabilityDynamics\Theme {
         ) ));
 
       }
+
+      /**
+       * Add "Sections" link to Appearance menu.
+       *
+       * @todo Figure out a way to keep the Appearance menu open while editing a menu.
+       *
+       * @method admin_menu
+       * @param $menu
+       */
+      public function admin_menu( $menu ) {
+        global $submenu;
+
+        if( current_theme_supports( 'asides' ) ) {
+          $submenu[ 'themes.php' ][ 20 ] = array( __( 'Asides' ), 'edit_theme_options', 'edit.php?post_type=_aside' );
+        }
+
+      }
+
 
       /**
        * Get a Content Section.
