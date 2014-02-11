@@ -24,12 +24,12 @@ namespace UsabilityDynamics\Theme {
           "store" => "options",
           "key"   => 'theme::' . ( wp_get_theme()->get( 'Name' ) ),
         )));
-        
+
         // Prepare default data which is used for storing in DB.
-        if( !$_instance->get() ) {
+        if( !$_instance->get( 'configuration' ) ) {
           $_instance->set( $_instance->_get_system_settings() );
         }
-        
+
         if( !empty( $data ) ) {
           $_instance->set( $data );
         }
