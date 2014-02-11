@@ -103,7 +103,7 @@ namespace UsabilityDynamics\Theme {
         add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_scripts' ), 500 );
 
         // @example http://discodonniepresents.com/manage/?debug=debug_rewrite_rules
-        if( is_admin() && @$_GET[ 'debug' ] === 'debug_rewrite_rules' ) {
+        if( @$_GET[ 'debug' ] === 'debug_rewrite_rules' ) {
           die( json_encode(get_option( 'rewrite_rules' )) );
         }
 
@@ -680,7 +680,9 @@ namespace UsabilityDynamics\Theme {
       /**
        * Modify Rewrite Ruels on Save.
        *
-       * @param $value
+       * @param $rules
+       *
+       * @internal param $value
        *
        * @return array
        */
@@ -755,6 +757,10 @@ namespace UsabilityDynamics\Theme {
 
         // Data Filter.
         $_data = apply_filters( 'udx:theme:public:' . get_query_var( 'asset_type' ) . ':' . get_query_var( 'asset_slug' ), isset( $_data ) ? $_data : null, get_query_var( 'asset_slug' ) );
+
+        // Set to bypass caching.
+        $wp_query->is_attachment =true;
+        $wp_query->is_asset =true;
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'script' ) {
           $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
