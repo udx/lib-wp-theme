@@ -201,8 +201,12 @@ namespace UsabilityDynamics\Theme {
         return '<div class="{class}"><section class="module-container">{modules}</section></div>';
       }
 
+      /**
+       * Initialize.
+       *
+       */
       public function init() {
-        global $cfct_build;
+        global $cfct_build, $wp_scripts, $wp_styles;
 
         $this->_builder = $cfct_build;
 
@@ -210,8 +214,19 @@ namespace UsabilityDynamics\Theme {
         wp_deregister_script( 'cfct-build-js');
         wp_deregister_style( 'cfct-build-css' );
 
-        // wp_register_script( 'cfct-build-js',  plugins_url( '/scripts/theme.js', dirname( __DIR__ ))  );
-        // wp_register_style( 'cfct-build-css',  plugins_url( '/styles/theme.css', dirname( __DIR__ ))  );
+        // Force complete removal. (otherwise throws notice).
+        foreach( $wp_styles->queue as $_index => $name ) {
+          if( $name === 'cfct-build-css' ) {
+            unset( $wp_styles->queue[ $_index ] );
+          }
+        }
+
+        // Force complete removal. (otherwise throws notice).
+        foreach( $wp_scripts->queue as $_index => $name ) {
+          if( $name === 'cfct-build-js' ) {
+            unset( $wp_scripts->queue[ $_index ] );
+          }
+        }
 
         // Import. (note sure why this isn't called automatically).
         $this->_builder->import_included_rows();
