@@ -3,7 +3,7 @@
 if( !class_exists( 'ShortcodeModule' ) ) {
 
   class ShortcodeModule extends cfct_build_module {
-    protected $_deprecated_id = 'cfct_shortcode';
+    protected $_deprecated_id = 'cfct_module_shortcode';
 
     /**
      * Set up the module
@@ -43,29 +43,35 @@ if( !class_exists( 'ShortcodeModule' ) ) {
      */
     public function admin_form( $data ) {
       global $shortcode_tags;
+
+      /*
       if( !empty( $shortcode_tags ) && is_array( $shortcode_tags ) ) {
-        $tags = array_unique( $shortcode_tags );
+
+        $tags = @array_unique( $shortcode_tags );
+
         ksort( $tags );
-        foreach( $tags as $shortcode => $func ) {
-          // if shortcode func is an internal class method the func will be an array
+
+        foreach( (array) $tags as $shortcode => $func ) {
           if( is_array( $func ) && substr( $func[ 1 ], 0, 1 ) != '_' ) {
             $filtered_tags[ ] = $shortcode;
           } elseif( substr( $func, 0, 1 ) != '_' ) { // not sure how relevant this is any more
             $filtered_tags[ ] = $shortcode;
           }
         }
+
         $hints = '[' . implode( '], [', $filtered_tags ) . ']';
+
       } else {
         $hints = '(none)';
-      }
+      } */
 
       return '
-<div>
-	<label for="' . $this->get_field_id( 'content' ) . '">' . __( 'Enter a Shortcode <span class="help">include the [brackets]</span>', 'carrington-build' ) . '</label>
-	<input type="text" name="' . $this->get_field_name( 'content' ) . '" id="' . $this->get_field_id( 'content' ) . '" value="' . ( !empty( $data[ $this->get_field_id( 'content' ) ] ) ? esc_attr( $data[ $this->get_field_id( 'content' ) ] ) : '' ) . '" />
-</div>
-<p>' . __( 'Available shortcodes:', 'carrington-build' ) . ' ' . $hints . '</p>
-		';
+        <div>
+          <label for="' . $this->get_field_id( 'content' ) . '">' . __( 'Enter a Shortcode <span class="help">include the [brackets]</span>', 'carrington-build' ) . '</label>
+          <input type="text" name="' . $this->get_field_name( 'content' ) . '" id="' . $this->get_field_id( 'content' ) . '" value="' . ( !empty( $data[ $this->get_field_id( 'content' ) ] ) ? esc_attr( $data[ $this->get_field_id( 'content' ) ] ) : '' ) . '" />
+        </div>';
+        //<p>' . __( 'Available shortcodes:', 'carrington-build' ) . ' ' . $hints . '</p>';
+
     }
 
     /**
