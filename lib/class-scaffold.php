@@ -59,7 +59,10 @@ namespace UsabilityDynamics\Theme {
        * @var string
        */
       public $structure;
-      
+
+      public function __construct() {
+      }
+
       /**
        * Initializes Theme.
        *
@@ -71,73 +74,50 @@ namespace UsabilityDynamics\Theme {
           _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Theme ID not specified.' );
         }
 
+        // Initialize Settings.
+        $this->settings = Settings::define(array(
+          'id' => $this->id,
+          'version' => $this->version,
+          'domain' => $this->domain,
+          'data' => array(
+            '_option_keys' => array(
+              'version' => $this->id . ':_version',
+              'settings' => $this->id . ':_settings',
+            )
+          )
+        ));
+
+        $options = (object) Utility::extend( $options, array(
+          'domain' => $this->domain
+        ));
+
+        // Set Instance Settings.
+        $this->set( '_initialize', $options );
+
+        add_filter( 'pre_update_option_rewrite_rules', array( $this, '_update_option_rewrite_rules' ), 1 );
+        add_action( 'query_vars', array( $this, '_query_vars' ) );
+        add_action( 'template_redirect', array( $this, '_redirect' ) );
+
+        // @example http://discodonniepresents.com/manage/?debug=debug_rewrite_rules
+        if( is_admin() && @$_GET[ 'debug' ] === 'debug_rewrite_rules' ) {
+          die( json_encode(get_option( 'rewrite_rules' )) );
+        }
+
+        $this->_upgrade();
+
       }
 
       /**
        * Create Theme Settings Instance.
        *
-       * @param array $options
+       * @param array $args
+       * @param array $data
+       *
+       * @return mixed
        */
       public function settings( $args = array(), $data = array() ) {
-        
-        $data = array_filter( wp_parse_args( $data, array(
-          'id' => $this->id,
-          'version' => $this->version,
-          'domain' => $this->domain
-        ) ) );
 
-        $this->settings = Settings::define( $args, $data );
-
-      }
-
-      /**
-       * Define Dynamic Public Assets
-       *
-       * @param $options
-       */
-      public function models( $options = array() ) {
-        global $wp_rewrite, $__theme;
-
-        $__theme = $options;
-
-        // Serve Public Assets.
-        add_action( 'template_redirect', function() {
-          global $__theme;
-
-          //die( '<pre>' . print_r( $__theme, true ) . '</pre>' );
-
-          if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === '/styles/app.css' ) {
-            $this->_serve_public( 'style', 'blah css' );
-          }
-
-          if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === '/scripts/app.js' ) {
-            $this->_serve_public( 'script', 'blah js' );
-          }
-
-          if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === '/models/app.json' ) {
-            $this->_serve_public( 'model', 'app.json' );
-          }
-
-        });
-
-        // Modify Rewrite Rules.
-        add_filter( 'option_rewrite_rules', function( $rules ) {
-
-          $_rules[ '/scripts/{1}.js$' ] = 'index.php?dynamic=true&$matches[1]';
-          $_rules[ '/styles/{1}.css$' ] = 'index.php?dynamic=true&matches[1]';
-          $_rules[ '/models/{1}.json$' ] = 'index.php?dynamic=true&matches[1]';
-
-          foreach( $rules as $key => $value ) {
-            $_rules[ $key ] = $value;
-          }
-
-          //die( json_encode( $_rules ) );
-          return $_rules;
-
-        });
-
-        //die( json_encode( get_option( 'rewrite_rules' ) ) );
-
+        return $this->settings;
       }
 
       /**
@@ -332,6 +312,8 @@ namespace UsabilityDynamics\Theme {
        * Declare Data Structure.
        *
        * @param array $options
+       *
+       * @return array|bool
        */
       public function structure( $options = array() ) {
         
@@ -442,6 +424,7 @@ namespace UsabilityDynamics\Theme {
        * Configures Image Sizes.
        *
        * @param array $options
+       * @return array
        */
       public function media( $options = array() ) {
         global $_wp_additional_image_sizes;
@@ -487,25 +470,93 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
-       * Handles Special Rewrite Rules.
+       * Modify Rewrite Ruels on Save.
        *
-       * @param array $options
+       * @param $value
+       *
+       * @return array
        */
-      private function _rewrites( $options = array() ) {
+      public function _update_option_rewrite_rules( $rules ) {
 
+        // Define New Rules.
+        $new_rules = array(
+          '^assets/styles/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
+          '^assets/scripts/([^/]+)/?' => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
+          '^assets/models/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
+        );
+
+        // Return concatenated rules.
+        return $new_rules + $rules;
+
+      }
+
+      /**
+       * Modify Query Rules.
+       *
+       * @param $query_vars
+       *
+       * @return array
+       */
+      public function _query_vars( $query_vars ) {
+
+        $query_vars[] = 'asset_type';
+        $query_vars[] = 'asset_slug';
+        $query_vars[] = 'is_asset';
+
+        return $query_vars;
+
+      }
+
+      /**
+       * Handle Asset Redirection.
+       *
+       * @param $query_vars
+       */
+      public function _redirect( $query_vars ) {
+        global $wp_query;
+
+        $asset_slug = get_query_var( 'asset_slug' );
+        $asset_type = get_query_var( 'asset_type' );
+
+        if( !get_query_var( 'is_asset' ) ) {
+          return;
+        }
+
+        if( is_file( $_path = trailingslashit( get_stylesheet_directory() ) . trailingslashit( get_query_var( 'asset_type' ) . 's' ) . get_query_var( 'asset_slug' ) ) ) {
+          $_data = file_get_contents( $_path );
+        };
+
+        if( get_query_var( 'asset_type' ) === 'script' ) {
+          $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
+        }
+
+        if( get_query_var( 'asset_type' ) === 'style' ) {
+          $this->_serve_public( 'style', get_query_var( 'asset_slug' ), $_data );
+        }
+
+        if( get_query_var( 'asset_type' ) === 'model' ) {
+          $this->_serve_public( 'model', get_query_var( 'asset_slug' ), $_data );
+        }
 
       }
 
       /**
        * Serve Public Assets.
        *
+       *
+       * @example
+       *
+       *    add_filter( 'udx:theme:public:script', 'custom script content' );
+       *    add_filter( 'udx:theme:public:style', 'custom script content' );
+       *    add_filter( 'udx:theme:public:model', 'custom script content' );
+       *
        * @param string $type
        * @param string $data
        */
-      private function _serve_public( $type = '', $data = '' ) {
+      private function _serve_public( $type = '', $name, $data = '' ) {
 
         // Configure Data.
-        $data = apply_filters( 'udx:theme:public:' . $type . ':data', $data );
+        $data = apply_filters( 'udx:theme:public:' . $type . ':data', $data, $name );
 
         // Configure Headers.
         $headers = apply_filters( 'udx:theme:public:' . $type . 'headers', array(
@@ -531,7 +582,7 @@ namespace UsabilityDynamics\Theme {
        * Handles Theme Activation.
        *
        */
-      public function _activate() {
+      private function _activate() {
 
       }
 
@@ -539,7 +590,7 @@ namespace UsabilityDynamics\Theme {
        * Handles Theme Deactivation.
        *
        */
-      public function _deactivate() {
+      private function _deactivate() {
 
       }
 
@@ -547,7 +598,15 @@ namespace UsabilityDynamics\Theme {
        * Handles Theme Installation.
        *
        */
-      public function _install() {
+      private function _install() {
+
+        // Flush Rules.
+        flush_rewrite_rules();
+
+        // Update installed verison.
+        update_option( $this->get( '_option_keys.version' ), $this->version );
+
+        // wp_die( 'installed' );
 
       }
 
@@ -555,7 +614,28 @@ namespace UsabilityDynamics\Theme {
        * Handles Theme Upgrades.
        *
        */
-      public function _upgrade() {
+      private function _upgrade() {
+
+        // Get Installed Version.
+        $_installed = get_option( $this->get( '_option_keys.version' ) );
+
+        // Not Instlled.
+        if( !$_installed ) {
+          $this->_install();
+        }
+
+        // Upgrade Needed.
+        if( version_compare( $this->version, $_installed, '>' ) ) {
+
+          // Flush Rules.
+          flush_rewrite_rules();
+
+          // Update installed verison.
+          update_option( $this->get( '_option_keys.version' ), $this->version );
+
+          // wp_die( 'upgrded' );
+
+        }
 
       }
 
