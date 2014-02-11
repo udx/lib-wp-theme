@@ -527,19 +527,19 @@ namespace UsabilityDynamics\Theme {
           $_data = file_get_contents( $_path );
         };
 
-        if( get_query_var( 'asset_type' ) === 'script' ) {
+        if( isset( $_data ) && get_query_var( 'asset_type' ) === 'script' ) {
           $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
         }
 
-        if( get_query_var( 'asset_type' ) === 'image' ) {
+        if( isset( $_data ) &&  get_query_var( 'asset_type' ) === 'image' ) {
           $this->_serve_public( 'image', get_query_var( 'asset_slug' ), $_data );
         }
 
-        if( get_query_var( 'asset_type' ) === 'style' ) {
+        if( isset( $_data ) && get_query_var( 'asset_type' ) === 'style' ) {
           $this->_serve_public( 'style', get_query_var( 'asset_slug' ), $_data );
         }
 
-        if( get_query_var( 'asset_type' ) === 'model' ) {
+        if( isset( $_data )  && get_query_var( 'asset_type' ) === 'model' ) {
           $this->_serve_public( 'model', get_query_var( 'asset_slug' ), $_data );
         }
 
