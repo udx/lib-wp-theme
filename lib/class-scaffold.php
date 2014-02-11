@@ -689,7 +689,7 @@ namespace UsabilityDynamics\Theme {
         // Define New Rules.
         $new_rules = array(
           '^assets/styles/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
-          '^assets/styles/fonts/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=font&asset_slug=$matches[1]',
+          '^assets/fonts/([^/]+)/?'   => 'index.php?is_asset=1&asset_type=font&asset_slug=$matches[1]',
           '^assets/images/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=image&asset_slug=$matches[1]',
           '^assets/scripts/([^/]+)/?' => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
           '^assets/models/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
@@ -749,7 +749,7 @@ namespace UsabilityDynamics\Theme {
 
         }
 
-        if( is_file( $_path = trailingslashit( get_stylesheet_directory() ) . trailingslashit( $_path ) . get_query_var( 'asset_slug' ) ) ) {
+        if( is_file( $_path = trailingslashit( get_stylesheet_directory() ) . trailingslashit( isset( $_path ) ? $_path : '' ) . get_query_var( 'asset_slug' ) ) ) {
           $_data = file_get_contents( $_path );
         };
 
@@ -775,6 +775,8 @@ namespace UsabilityDynamics\Theme {
         if( isset( $_data )  && get_query_var( 'asset_type' ) === 'model' ) {
           $this->_serve_public( 'model', get_query_var( 'asset_slug' ), $_data );
         }
+
+        http_response_code( 404 );
 
       }
 
