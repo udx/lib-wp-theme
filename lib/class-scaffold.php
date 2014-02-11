@@ -481,6 +481,7 @@ namespace UsabilityDynamics\Theme {
         // Define New Rules.
         $new_rules = array(
           '^assets/styles/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
+          '^assets/images/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=image&asset_slug=$matches[1]',
           '^assets/scripts/([^/]+)/?' => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
           '^assets/models/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
         );
@@ -530,6 +531,10 @@ namespace UsabilityDynamics\Theme {
           $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
         }
 
+        if( get_query_var( 'asset_type' ) === 'image' ) {
+          $this->_serve_public( 'image', get_query_var( 'asset_slug' ), $_data );
+        }
+
         if( get_query_var( 'asset_type' ) === 'style' ) {
           $this->_serve_public( 'style', get_query_var( 'asset_slug' ), $_data );
         }
@@ -560,10 +565,27 @@ namespace UsabilityDynamics\Theme {
 
         // Configure Headers.
         $headers = apply_filters( 'udx:theme:public:' . $type . 'headers', array(
-            'Content-Type'    => 'application/javascript; charset=' . get_bloginfo( 'charset' ),
+            'Cache-Control'   => 'public',
+            'Pragma'   => 'cache',
             'X-Frame-Options' => 'SAMEORIGIN',
             'Vary'            => 'Accept-Encoding'
           ));
+
+        if( $type === 'script' ) {
+          $headers[ 'Content-Type' ] = isset( $headers[ 'Content-Type' ] ) && $headers[ 'Content-Type' ] ? $headers[ 'Content-Type' ] : 'application/javascript; charset=' . get_bloginfo( 'charset' );
+        }
+
+        if( $type === 'style' ) {
+          $headers[ 'Content-Type' ] = isset( $headers[ 'Content-Type' ] ) && $headers[ 'Content-Type' ] ? $headers[ 'Content-Type' ] : 'text/css; charset=' . get_bloginfo( 'charset' );
+        }
+
+        if( $type === 'image' ) {
+          $headers[ 'Content-Type' ] = isset( $headers[ 'Content-Type' ] ) && $headers[ 'Content-Type' ] ? $headers[ 'Content-Type' ] : 'image/png; charset=' . get_bloginfo( 'charset' );
+        }
+
+        if( $type === 'model' ) {
+          $headers[ 'Content-Type' ] = isset( $headers[ 'Content-Type' ] ) && $headers[ 'Content-Type' ] ? $headers[ 'Content-Type' ] : 'application/json; charset=' . get_bloginfo( 'charset' );
+        }
 
         // Set Headers.
         foreach( (array) $headers as $name => $field_value ) {
