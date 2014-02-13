@@ -60,18 +60,14 @@ namespace UsabilityDynamics\Theme {
        */
       public $structure;
 
-      public function __construct() {
-      }
-
-      /**
-       * Initializes Theme.
-       *
-       * @param array $options
-       */
-      public function initialize( $options = array() ) {
+      public function __construct( $options = array() ) {
 
         if( !$this->id ) {
-          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Theme ID not specified.' );
+          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::__construct', 'Theme ID not specified.', isset( $this->version ) ? $this->version : null );
+        }
+
+        if( did_action( 'widgets_init' ) ) {
+          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::__construct', 'Called too late - should be called before widgets_init hook.', $this->version );
         }
 
         // Initialize Settings.
@@ -99,9 +95,10 @@ namespace UsabilityDynamics\Theme {
         add_filter( 'pre_update_option_rewrite_rules', array( $this, '_update_option_rewrite_rules' ), 1 );
         add_action( 'query_vars', array( $this, '_query_vars' ) );
         add_action( 'template_redirect', array( $this, '_redirect' ) );
-        add_filter( 'intermediate_image_sizes_advanced', array( $this, 'image_sizes' ));
-
+        add_filter( 'intermediate_image_sizes_advanced', array( $this, '_image_sizes' ));
         add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_scripts' ), 500 );
+        add_action( 'widgets_init', array( $this, '_widgets' ), 100 );
+        add_filter( 'post_class', array( $this, '_post_class' ), 100, 4 );
 
         // @example http://discodonniepresents.com/manage/?debug=debug_rewrite_rules
         if( @$_GET[ 'debug' ] === 'debug_rewrite_rules' ) {
@@ -115,6 +112,23 @@ namespace UsabilityDynamics\Theme {
 
         $this->_upgrade();
 
+      }
+
+      /**
+       * Initializes Theme.
+       *
+       * @param array $options
+       */
+      public function initialize( $options = array() ) {
+        self::__construct( $options );
+      }
+
+      public function _post_class( $classes, $class, $post_id ) {
+
+        $classes[] = 'col-md-6 col-md-pull-3 section';
+
+        //die( '<pre>' . print_r( $classes, true ) . '</pre>' );
+        return $classes;
       }
 
       /**
@@ -173,6 +187,32 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
+       * Register Widget Areas.
+       *
+       */
+      public function _widgets() {
+
+        if( did_action( 'widgets_init' ) && !current_filter( 'widgets_init' ) ) {
+          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::__construct', 'Called too late - should be called before widgets_init hook.', $this->version );
+        }
+        foreach( is_array( $this->get( '_sidebars' ) ) ? $this->get( '_sidebars' )  : array() as $_key => $settings ) {
+
+          register_sidebar( array(
+            'id'            => '' . ( isset( $settings[ 'id' ] ) ? $settings[ 'id' ] : $_key . '' ),
+            'name'          => $settings[ 'title' ],
+            'description'   => $settings[ 'description' ],
+            'class'         => isset( $settings[ 'class' ] ) ? $settings[ 'class' ] : 'module',
+            'before_widget' => isset( $settings[ 'before' ] ) ? $settings[ 'before' ] : '<div class="module widget %1$s %2$s"><div class="module-inner">',
+            'after_widget'  => isset( $settings[ 'after' ] ) ? $settings[ 'after' ] : '</div></div>',
+            'before_title'  => isset( $settings[ 'before.title' ] ) ? $settings[ 'before.title' ] : '<h3 class="module-title">',
+            'after_title'   => isset( $settings[ 'after.title' ] ) ? $settings[ 'after.title' ] : '</h3>',
+          ));
+
+        }
+
+      }
+      /**
+       * Enqueue AMD/Theme Scripts.
        *
        */
       public function _enqueue_scripts() {
@@ -448,6 +488,75 @@ namespace UsabilityDynamics\Theme {
 
       }
 
+      /**
+       * Render Section
+       *
+       * Can find and render Widget Area (sidebar) or Dynamic Aside section.
+       *
+       * @param null  $name
+       * @param array $args
+       *
+       * @return bool|null
+       */
+      public function section( $name = null, $args = array() ) {
+        global $post;
+
+        //$_post_type = get_post_type();
+
+        $_sections = $this->get( '_sections' );
+
+        if( !isset( $_sections ) || !isset( $_sections[ $name ] ) ) {
+          return null;
+        }
+
+        // Widget / Sidebar Area.
+        if( isset( $_sections[ $name ][ 'sidebar' ] ) && is_active_sidebar( $name ) ) {
+
+          ob_start();
+          dynamic_sidebar( $name );
+          $content = ob_get_clean();
+
+          echo '<section class="' . ( isset( $_sections[ $name ][ 'options' ][ 'class' ] ) ? $_sections[ $name ][ 'options' ][ 'class' ] : 'section sidebar section-' . $name ) . '" data-section-type="sidebar" data-section="' . $name . '">' . $content . '</section>';
+
+        }
+
+        // Dynamic Aside Section.
+
+        $args = (object) wp_parse_args( $args, $default = array(
+          'type'           => '_aside',
+          'class'          => 'modular-aside',
+          'more_link_text' => null,
+          'strip_teaser'   => null,
+          'return'         => false,
+        ));
+
+        // Get all asides assigned to current section/location.
+        $custom_loop = get_posts( array(
+          'post_type' => '_aside',
+          'post_status' => 'publish',
+          'meta_key' => 'asideLocation',
+          'meta_value' => $name
+        ));
+
+        if( empty( $custom_loop ) || !is_array( $custom_loop ) ) {
+          return null;
+        }
+
+        $_asides = array();
+
+        foreach( $custom_loop as $post ) {
+
+          $_asides[] = self::aside( $post->ID, array(
+            'return' => true
+          ));
+
+        }
+
+        if( !empty( $_asides ) ) {
+          echo '<section class="section section-' . $name . '" data-section="' . $name . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
+        }
+
+      }
 
       /**
        * Get a Content Section.
@@ -477,13 +586,13 @@ namespace UsabilityDynamics\Theme {
         // Preserve Post.
         $_post = $post;
 
-        // Using query_posts() will not work because we must not change the global query.
-        $custom_loop = new \WP_Query( array(
-          'name'      => $name,
-          'post_type' => $args->type
-        ));
 
-        // die(json_encode( $custom_loop ));
+        // Using query_posts() will not work because we must not change the global query.
+        $custom_loop = new \WP_Query( array_filter(array(
+          'page_id'   => is_numeric( $name )  ? $name : null,
+          'name'   => is_string( $name ) ? $name : null,
+          'post_type' => $args->type
+        )));
 
         if( $custom_loop->have_posts() ) {
           while( $custom_loop->have_posts() ) {
@@ -586,6 +695,73 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
+       * Add Dynamic Aside Sections.
+       *
+       * @param array $options
+       */
+      public function sections( $options = array() ) {
+        global $_wp_theme_features, $wp_post_types;
+
+        if( !isset( $_wp_theme_features[ 'aside-sections' ] ) ) {
+          add_theme_support( 'aside-sections', $options );
+        }
+
+        $_locations = array();
+        $_sidebars  = array();
+
+        foreach( (array) $options as $_key => $_settings ) {
+
+          if( isset( $_settings[ 'options' ] ) && is_array( $_settings[ 'options' ] )  ) {
+
+            if( isset( $_settings[ 'sidebar' ] ) && $_settings[ 'options' ] ) {
+              $_sidebars[ $_key ] = $_settings;
+            }
+
+          }
+
+          if( !isset( $_settings[ 'sidebar' ] ) || !$_settings[ 'sidebar' ] ) {
+            $_locations[ $_key ] = isset(  $_settings[ 'title' ] ) ? $_settings[ 'title' ] : $_key;
+          }
+
+        }
+
+        // Store all defined Sections.
+        $this->set( '_sections', $options );
+
+        // Store Sidebars for later registration.
+        $this->set( '_sidebars', $_sidebars );
+
+        // Register Aside Post Type.
+        \UsabilityDynamics\Structure::define( array(
+          'types' => array(
+            '_aside' => array(
+              'data'       => array(
+                'label'           => __( 'Aside' ),
+                'capability_type' => 'page',
+                'show_in_menu'    => false,
+                'show_ui'         => true,
+                'can_export'      => true,
+                'supports'        => array( 'title', 'editor', 'revisions', 'post-formats' )
+              ),
+              'meta' => array(
+                'general' => array( 'fields' => array( 'asideLocation' ) )
+              )
+            )
+          ),
+          'meta' => array(
+            'asideLocation' => array(
+              "name"        => __( "Sections" ),
+              "description" => __( "Sectiosn to display aside in." ),
+              "type"        => "checkbox_list",
+              "multiple"    => true,
+              "options"     => $_locations
+            )
+          )
+        ));
+
+      }
+
+      /**
        * Configures Image Sizes.
        *
        * @param array $options
@@ -623,7 +799,7 @@ namespace UsabilityDynamics\Theme {
        * @param $_sizes
        * @return array
        */
-      public function image_sizes( $_sizes ) {
+      public function _image_sizes( $_sizes ) {
         global $_wp_additional_image_sizes;
 
         $_available_sizes = $_wp_additional_image_sizes;
@@ -823,6 +999,7 @@ namespace UsabilityDynamics\Theme {
        *    add_filter( 'udx:theme:public:model', 'custom script content' );
        *
        * @param string $type
+       * @param        $name
        * @param string $data
        */
       private function _serve_public( $type = '', $name, $data = '' ) {
