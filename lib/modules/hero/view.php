@@ -1,4 +1,4 @@
-<div class="<?php echo $id_base; ?>-image" style="height: <?php echo $box_height; ?>px;<?php if (!empty($image_src)) { ?> background-image: url(<?php echo $image_src[0]; ?>); background-position: <?php echo $image_alignment; ?>; background-repeat: no-repeat;<?php } ?>">
+<div class="<?php echo $id_base; ?>-image" style="min-height: <?php echo $box_height; ?>px;<?php if (!empty($image_src)) { ?> background-image: url(<?php echo $image_src[0]; ?>); background-position: <?php echo $image_alignment; ?>; background-repeat: no-repeat;<?php } ?>">
 	<div class="<?php echo $id_base; ?>-wrap">
 		<?php
 			if (!empty($title)) { 
