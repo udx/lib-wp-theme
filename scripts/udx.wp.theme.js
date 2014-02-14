@@ -1,1 +1,1 @@
-define("udx.wp.posts",["udx.utility"],function(){return console.debug("udx.wp.posts","loaded"),function(){return console.debug("udx.wp.posts","ready"),this}});
+define("udx.wp.theme",["udx.utility"],function(){return console.debug("udx.wp.theme","loaded"),function(){return console.debug("udx.wp.theme","ready"),this}});
