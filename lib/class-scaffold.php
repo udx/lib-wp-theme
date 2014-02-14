@@ -1065,7 +1065,7 @@ namespace UsabilityDynamics\Theme {
           $this->_serve_public( 'model', get_query_var( 'asset_slug' ), $_data );
         }
 
-        \http_response_code( 404 );
+        // http_response_code( 404 );
 
       }
 
@@ -1115,7 +1115,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         // WordPress will try to make it 404.
-        \http_response_code( 200 );
+        // http_response_code( 200 );
 
         if( is_array( $data ) || is_object( $data ) ) {
           //$data = 'define( "' . $name . '", ' . json_encode( $data ) . ');';
