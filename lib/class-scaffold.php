@@ -76,6 +76,9 @@ namespace UsabilityDynamics\Theme {
           'version' => $this->version,
           'domain' => $this->domain,
           'data' => array(
+            'locations' => array(
+              'modules' => array()
+            ),
             '_option_keys' => array(
               'version' => $this->id . ':_version',
               'settings' => $this->id . ':_settings',
@@ -87,6 +90,8 @@ namespace UsabilityDynamics\Theme {
           'domain' => $this->domain,
           'languages' => get_template_directory() . '/static/languages'
         ));
+
+        $this->modules( __DIR__ . '/modules' );
 
         // Set Instance Settings.
         $this->set( '_initialize', $options );
@@ -114,6 +119,16 @@ namespace UsabilityDynamics\Theme {
 
       }
 
+      public function modules( $path = '' ) {
+
+        $_modules = (array) $this->get( 'locations.modules' );
+
+        $_modules = array_merge( $_modules, (array) $path );
+
+        $this->set( 'locations.modules', $_modules );
+
+      }
+
       /**
        * Initializes Theme.
        *
@@ -123,11 +138,33 @@ namespace UsabilityDynamics\Theme {
         self::__construct( $options );
       }
 
+      /**
+       * Determine Post Class based on active sidebars
+       * s
+       * @param $classes
+       * @param $class
+       * @param $post_id
+       *
+       * @return array
+       */
       public function _post_class( $classes, $class, $post_id ) {
 
-        $classes[] = 'col-md-6 col-md-pull-3 section';
+        if( is_active_sidebar( 'left-sidebar' ) && is_active_sidebar( 'right-sidebar' ) ) {
+          $classes[] = 'col-md-6 col-md-pull-3 section';
+        }
 
-        //die( '<pre>' . print_r( $classes, true ) . '</pre>' );
+        if( is_active_sidebar( 'left-sidebar' ) && !is_active_sidebar( 'right-sidebar' ) ) {
+          $classes[] = 'col-md-9 section';
+        }
+
+        if( !is_active_sidebar( 'left-sidebar' ) && is_active_sidebar( 'right-sidebar' ) ) {
+          $classes[] = 'col-md-9 col-md-pull-3 section';
+        }
+
+        if( !is_active_sidebar( 'left-sidebar' ) && !is_active_sidebar( 'right-sidebar' ) ) {
+          $classes[] = 'col-md-12 section';
+        }
+
         return $classes;
       }
 
@@ -151,6 +188,9 @@ namespace UsabilityDynamics\Theme {
        */
       public function scripts( $options = array() ) {
 
+        wp_deregister_script( 'jquery' );
+
+        wp_register_script( 'jquery', 'http://cdn.udx.io/vendor/jquery.js', array(), '1.10.2', true );
         wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), isset( $this->version ) ? $this->version : '3.0.0', true );
 
         foreach( (array) $options as $name => $_settings ) {
@@ -186,15 +226,46 @@ namespace UsabilityDynamics\Theme {
 
       }
 
+      public function sidebars_widgets( $widget_areas = array() ) {
+
+        if( empty( $widget_areas ) ) {
+          return;
+        }
+
+        $widget_areas = (array) $widget_areas;
+
+        if( method_exists( '\UsabilityDynamics\Theme\WidgetConditions', 'sidebars_widgets' ) ) {
+          return \UsabilityDynamics\Theme\WidgetConditions::sidebars_widgets( $widget_areas );
+        }
+
+        if( method_exists( '\Jetpack_Widget_Conditions', 'sidebars_widgets' ) ) {
+          return \Jetpack_Widget_Conditions::sidebars_widgets( $widget_areas );
+        }
+
+        die('shit');
+
+      }
       /**
        * Register Widget Areas.
        *
        */
       public function _widgets() {
+        //die( '<pre>' . print_r( $this->get( 'locations.modules' ), true ) . '</pre>' );
+
+        //$_modules = $this->get( 'locations.modules' );
+        //foreach( (array) $_modules as $path ) {}
+
+        if( is_file( __DIR__ . '/plugins/widget-conditions/widget-conditions.php' ) ) {
+          include_once( __DIR__ . '/plugins/widget-conditions/widget-conditions.php' );
+
+
+
+        }
 
         if( did_action( 'widgets_init' ) && !current_filter( 'widgets_init' ) ) {
           _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::__construct', 'Called too late - should be called before widgets_init hook.', $this->version );
         }
+
         foreach( is_array( $this->get( '_sidebars' ) ) ? $this->get( '_sidebars' )  : array() as $_key => $settings ) {
 
           register_sidebar( array(
@@ -499,9 +570,7 @@ namespace UsabilityDynamics\Theme {
        * @return bool|null
        */
       public function section( $name = null, $args = array() ) {
-        global $post;
-
-        //$_post_type = get_post_type();
+        global $post, $wp_registered_sidebars, $wp_registered_widgets;
 
         $_sections = $this->get( '_sections' );
 
@@ -516,6 +585,18 @@ namespace UsabilityDynamics\Theme {
           dynamic_sidebar( $name );
           $content = ob_get_clean();
 
+          if( $name === 'right-sidebar' && !is_active_sidebar( 'left-sidebar' ) ) {
+            $_sections[ $name ][ 'options' ][ 'class' ] = $_sections[ $name ][ 'options' ][ 'class' ] . ' col-md-push-9';
+          }
+
+          if( $name === 'right-sidebar' && is_active_sidebar( 'left-sidebar' ) ) {
+            $_sections[ $name ][ 'options' ][ 'class' ] = $_sections[ $name ][ 'options' ][ 'class' ] . ' col-md-push-6';
+          }
+
+          if( $name === 'left-sidebar' && is_active_sidebar( 'right-sidebar' ) ) {
+            $_sections[ $name ][ 'options' ][ 'class' ] = $_sections[ $name ][ 'options' ][ 'class' ] . ' ';
+          }
+
           echo '<section class="' . ( isset( $_sections[ $name ][ 'options' ][ 'class' ] ) ? $_sections[ $name ][ 'options' ][ 'class' ] : 'section sidebar section-' . $name ) . '" data-section-type="sidebar" data-section="' . $name . '">' . $content . '</section>';
 
         }
@@ -524,10 +605,10 @@ namespace UsabilityDynamics\Theme {
 
         $args = (object) wp_parse_args( $args, $default = array(
           'type'           => '_aside',
-          'class'          => 'modular-aside',
+          'class'          => 'modular-aside swiper-slide',
           'more_link_text' => null,
           'strip_teaser'   => null,
-          'return'         => false,
+          'return'         => true
         ));
 
         // Get all asides assigned to current section/location.
@@ -545,15 +626,11 @@ namespace UsabilityDynamics\Theme {
         $_asides = array();
 
         foreach( $custom_loop as $post ) {
-
-          $_asides[] = self::aside( $post->ID, array(
-            'return' => true
-          ));
-
+          $_asides[] = self::aside( $post->ID, $args );
         }
 
         if( !empty( $_asides ) ) {
-          echo '<section class="section section-' . $name . '" data-section="' . $name . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
+          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . $_sections[ $name ]['options']['requires']  . '"><div class="container swiper-wrapper">' . implode( '', $_asides ) . '</div></section>';
         }
 
       }
@@ -573,7 +650,7 @@ namespace UsabilityDynamics\Theme {
        * @return mixed|null
        */
       public function aside( $name = null, $args = array() ) {
-        global $post;
+        //global $post;
 
         $args = (object) wp_parse_args( $args, $default = array(
           'type'           => '_aside',
@@ -584,7 +661,7 @@ namespace UsabilityDynamics\Theme {
         ));
 
         // Preserve Post.
-        $_post = $post;
+        //$_post = $post;
 
 
         // Using query_posts() will not work because we must not change the global query.
@@ -597,14 +674,12 @@ namespace UsabilityDynamics\Theme {
         if( $custom_loop->have_posts() ) {
           while( $custom_loop->have_posts() ) {
             $custom_loop->the_post();
+            $title    = get_post()->post_name;
             $content = get_the_content( $args->more_link_text, $args->strip_teaser );
             $content = apply_filters( 'the_content', $content );
             $content = str_replace( ']]>', ']]&gt;', $content );
           }
         }
-
-        // Return post.
-        $post = $_post;
 
         // Try to locale regular aside.
         if( !isset( $content ) || !$content ) {
@@ -613,7 +688,10 @@ namespace UsabilityDynamics\Theme {
           $content = ob_get_clean();
         }
 
-        $content = apply_filters( $this->id . ':aside', isset( $content ) ? '<aside class="' . $args->class . ' aside-' . $name . '" data-aside="' . $name . '">' . $content . '</aside>' : null, $name );
+        $content = apply_filters( $this->id . ':aside', isset( $content ) ? '<aside class="' . $args->class . ' ' . $title . ' aside-' . $name . '" data-aside="' . $name . '">' . $content . '</aside>' : null, $name );
+
+        // Return post.
+        //$post = $_post;
 
         if( $args->return ) {
           return $content;
@@ -740,6 +818,9 @@ namespace UsabilityDynamics\Theme {
                 'capability_type' => 'page',
                 'show_in_menu'    => false,
                 'show_ui'         => true,
+                'exclude_from_search'         => true,
+                'publicly_queryable'         => false,
+                'public'          => false,
                 'can_export'      => true,
                 'supports'        => array( 'title', 'editor', 'revisions', 'post-formats' )
               ),
@@ -751,7 +832,7 @@ namespace UsabilityDynamics\Theme {
           'meta' => array(
             'asideLocation' => array(
               "name"        => __( "Sections" ),
-              "description" => __( "Sectiosn to display aside in." ),
+              "description" => __( "Sections to display aside in." ),
               "type"        => "checkbox_list",
               "multiple"    => true,
               "options"     => $_locations
