@@ -605,7 +605,7 @@ namespace UsabilityDynamics\Theme {
 
         $args = (object) wp_parse_args( $args, $default = array(
           'type'           => '_aside',
-          'class'          => 'modular-aside swiper-slide',
+          'class'          => 'modular-aside',
           'more_link_text' => null,
           'strip_teaser'   => null,
           'return'         => true
@@ -630,7 +630,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         if( !empty( $_asides ) ) {
-          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . $_sections[ $name ]['options']['requires']  . '"><div class="container swiper-wrapper">' . implode( '', $_asides ) . '</div></section>';
+          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . $_sections[ $name ]['options']['requires']  . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
         }
 
       }
