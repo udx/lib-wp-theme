@@ -188,7 +188,7 @@ namespace UsabilityDynamics\Theme {
        */
       public function scripts( $options = array() ) {
 
-        wp_deregister_script( 'jquery' );
+        //wp_deregister_script( 'jquery' );
 
         wp_register_script( 'jquery', 'http://cdn.udx.io/vendor/jquery.js', array(), '1.10.2', true );
         wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), isset( $this->version ) ? $this->version : '3.0.0', true );
@@ -471,29 +471,29 @@ namespace UsabilityDynamics\Theme {
        * @return array|bool
        */
       public function structure( $options = array() ) {
-        
+
         $options = wp_parse_args( $options, array(
           'types' => array(), // Custom post types
           'meta' => array(), // Meta fields. The list of arrays. Every meta array is set of /RW_Meta_Box field attributes
           'taxonomies' => array(), // Taxonomies
         ) );
-        
+
         $this->structure = \UsabilityDynamics\Structure::define( $options );
-        
+
         return $this->structure;
       }
-      
+
       /**
        * Returns post data including meta data specified in structure
        *
        * @author peshkov@UD
        */
       public function get_post( $post_id, $filter = false ) {
-    
+
         $post = get_post( $post_id, ARRAY_A, $filter );
-      
+
         if( $post && !is_wp_error( $post ) && key_exists( $post[ 'post_type' ], (array)$this->structure ) ) {
-        
+
           // Get meta data
           foreach( (array)$this->structure[ $post[ 'post_type' ] ][ 'meta' ] as $key ) {
             $post[ $key ] = get_post_meta( $post_id, $key, false );
@@ -505,9 +505,9 @@ namespace UsabilityDynamics\Theme {
               }
             }
           }
-        
+
         }
-      
+
         return $post;
       }
 
