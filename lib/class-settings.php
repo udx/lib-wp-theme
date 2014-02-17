@@ -11,14 +11,14 @@ namespace UsabilityDynamics\Theme {
   if( !class_exists( 'UsabilityDynamics\Theme\Settings' ) ) {
 
     class Settings extends \UsabilityDynamics\Settings {
-    
+
       /**
        * Create Settings Instance
        *
        * @since 2.0.0
        */
       static function define( $args = false, $data = false ) {
-      
+
         // Instantiate Settings object
         $_instance = new Settings( Utility::parse_args( $args, array(
           "store" => "options",
@@ -30,15 +30,18 @@ namespace UsabilityDynamics\Theme {
           $_instance->set( $_instance->_get_system_settings() );
         }
 
+        //** Always load structure to keep it updated */
+        $_instance->set( $_instance->_get_system_structure() );
+
         if( !empty( $data ) ) {
           $_instance->set( $data );
         }
-        
+
         // Return Instance.
         return $_instance;
 
       }
-      
+
       /**
        * Get default Settings from schema
        *
@@ -51,6 +54,20 @@ namespace UsabilityDynamics\Theme {
 
         return array();
 
+      }
+
+      /**
+       *
+       * @param type $path
+       * @return type
+       */
+      private function _get_system_structure( $path = '/static/schemas/default.structure.json' ) {
+
+        if( file_exists( $file = get_stylesheet_directory() . $path ) ) {
+          return \UsabilityDynamics\Utility::l10n_localize( json_decode( file_get_contents( $file ), true ) );
+        }
+
+        return array();
       }
 
     }
