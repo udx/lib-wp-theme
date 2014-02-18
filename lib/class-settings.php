@@ -31,6 +31,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         //** Always load structure to keep it updated */
+        $_instance->set( 'structure', false );
         $_instance->set( $_instance->_get_system_structure() );
 
         if( !empty( $data ) ) {
