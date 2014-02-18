@@ -445,6 +445,33 @@ namespace UsabilityDynamics\Theme {
         }
 
       }
+      
+      /**
+       * DeRegister Module
+       *
+       * @param $classname
+       *
+       * @return bool
+       */
+      public function deregisterModule( $classname ) {
+        global $cfct_build;
+
+        if( !did_action( 'init' ) ) {
+          _doing_it_wrong( 'deregisterModule', __( 'Module de-registration called too early, before init.' ), 0 );
+        }
+
+        if( did_action( 'template_redirect' ) ) {
+          _doing_it_wrong( 'deregisterModule', __( 'Module de-registration called too late, after template_redirect.' ), 0 );
+        }
+
+        if( $cfct_build instanceof \cfct_build_common ) {
+          $cfct_build->template->deregister_type( 'module', $classname );
+          return true;
+        } else {
+          return false;
+        }
+
+      }
 
       /**
        * Register Row Calss
