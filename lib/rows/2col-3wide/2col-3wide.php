@@ -5,16 +5,17 @@
  *
  * @package Carrington Build
  */
-if (!class_exists('cfct_row_a_bcd')) {
 
-  if ( !class_exists( '__block_c8_345678' ) ) {
-    class __block_c8_345678 extends cfct_block {
-      public function __construct( $classes = array() ) {
-        $this->add_classes( array( 'col-md-9', 'column' ) );
-        parent::__construct( $classes );
-      }
+if ( !class_exists( '__block_c8_345678' ) ) {
+  class __block_c8_345678 extends cfct_block {
+    public function __construct( $classes = array() ) {
+      $this->add_classes( array( 'col-md-9', 'column' ) );
+      parent::__construct( $classes );
     }
   }
+} 
+ 
+if (!class_exists('cfct_row_a_bcd')) {
 
 	class cfct_row_a_bcd extends cfct_build_row {
 		protected $_deprecated_id = 'row-a-bcd'; // deprecated property, not needed for new module development
