@@ -384,7 +384,6 @@ namespace UsabilityDynamics\Theme {
         $this->registerRow( 'cfct_row_a_bc' );
         $this->registerRow( 'cfct_row_abc' );
         $this->registerRow( 'RowFourColumns' );
-        $this->registerRow( 'cfct_row_a_bcd' );
 
       }
 
