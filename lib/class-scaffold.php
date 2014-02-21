@@ -193,15 +193,15 @@ namespace UsabilityDynamics\Theme {
         wp_register_script( 'jquery', 'http://cdn.udx.io/vendor/jquery.js', array(), '1.10.2', true );
         wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), isset( $this->version ) ? $this->version : '3.0.0', true );
 
-        foreach( (array) $options as $name => $_settings ) {
+        $settings = array(
+          'name' => $name,
+          'url' => '',
+          'version' => $this->version,
+          'footer' => true,
+          'deps' => array()
+        );
 
-          $settings = array(
-            'name' => $name,
-            'url' => '',
-            'version' => $this->version,
-            'footer' => true,
-            'deps' => array()
-          );
+        foreach( (array) $options as $name => $_settings ) {
 
           if( is_array( $_settings ) ) {
             $settings = (object) Utility::extend( $settings, $_settings );

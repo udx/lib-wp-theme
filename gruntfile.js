@@ -33,7 +33,7 @@ module.exports = function build( grunt ) {
           relativeUrls: true
         },
         files: {
-          'styles/theme.dev.css': [ 'styles/src/theme.less' ]
+          'styles/wp.theme.dev.css': [ 'styles/src/wp.theme.less' ]
         }
       },
       production: {
@@ -42,7 +42,7 @@ module.exports = function build( grunt ) {
           relativeUrls: true
         },
         files: {
-          'styles/theme.css': [ 'styles/src/theme.less' ]
+          'styles/wp.theme.css': [ 'styles/src/wp.theme.less' ]
         }
       }
     },

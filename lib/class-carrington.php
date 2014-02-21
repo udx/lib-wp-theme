@@ -174,9 +174,36 @@ namespace UsabilityDynamics\Theme {
         add_filter( 'cfct-get-extras-modules-css-admin', array( get_class(), '_theme_chooser_css' ), 10, 1 );
         add_filter( 'cfct-get-extras-modules-js-admin', array( get_class(), '_theme_chooser_js' ), 10, 1 );
 
+        add_filter( 'cfct-build-display-class', array( $this, 'cfct_build_display_class' ), 10, 4 );
+        add_action( 'wp_ajax_flawless_cb_row_class', array( $this, 'flawless_cb_row_class' ) );
+        add_action( 'cfct-row-admin-html', array( $this, '_row_admin_html' ) );
+        add_action( 'edit_form_after_editor', array( $this, 'edit_form_after_editor' ), 500 );
+        add_action( 'edit_form_top', array( $this, 'edit_form_top' ), 500 );
+        add_action( 'admin_body_class', array( $this, '_admin_body_class' ), 500 );
+        add_action( 'admin_enqueue_scripts', array( $this, '_admin_enqueue_scripts' ), 500 );
+
+        add_theme_support( 'carrington-build' );
+
         include_once( $this->path );
 
         return $this;
+
+      }
+
+      public function edit_form_after_editor( $current ) {
+        echo "</div>";
+      }
+
+      public function edit_form_top( $current ) {
+        echo '<div data-requires="udx.wp.editor" class="">';
+      }
+      public function _admin_body_class( $current ) {
+        return $current;
+      }
+
+      public function _admin_enqueue_scripts() {
+
+        wp_enqueue_script( 'app.require' );
 
       }
 
@@ -188,6 +215,7 @@ namespace UsabilityDynamics\Theme {
         return $post_data;
 
       }
+
       /**
        * @param $types
        *
@@ -220,6 +248,86 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
+       * Sets highest possible Carrington Build styles
+       *
+       * @todo '_cfct_build_data' may already be in a global variable and may not need to be loaded using gpm again
+       * @author potanin@UD
+       * @version 1.0
+       */
+      public function cfct_build_display_class( $current ) {
+        global $post;
+
+        $cfct_data = get_post_meta( $post->ID, '_cfct_build_data', true );
+
+        $custom_class = !empty( $cfct_data[ 'template' ][ 'custom_class' ] ) ? $cfct_data[ 'template' ][ 'custom_class' ] : 'cfct-build-default';
+
+        return $current . ' ' . $custom_class;
+      }
+
+      /**
+       * Saves custom row class
+       *
+       * @author potanin@UD
+       */
+      public function flawless_cb_row_class() {
+
+        $post_id   = $_REQUEST[ 'post_id' ];
+        $row_id    = $_REQUEST[ 'row_id' ];
+        $new_class = $_REQUEST[ 'new_class' ];
+
+        if( !$post_id || !is_numeric( $post_id ) ) {
+          $response = array(
+            'success' => 'false',
+            'message' => __( 'No post ID.', 'flawless' )
+          );
+
+        } else {
+
+          $cfct_data = get_post_meta( $post_id, '_cfct_build_data', true );
+          $rows      = $cfct_data[ 'template' ][ 'rows' ];
+
+          foreach( ( array ) $rows as $row_guid => $row_data ) {
+
+            if( $row_guid == $row_id ) {
+              $cfct_data[ 'template' ][ 'rows' ][ $row_guid ][ 'custom_class' ] = !empty( $new_class ) ? $new_class : 'default-row-class';
+              continue;
+            }
+
+          }
+
+          update_post_meta( $post_id, '_cfct_build_data', $cfct_data );
+
+          $response = array(
+            'success'  => 'true',
+            'message'  => __( 'Custom row class saved.', 'flawless' ),
+            'row_guid' => $row_guid
+          );
+
+        }
+
+        die( json_encode( $response ) );
+      }
+
+      /**
+       * Hooks into HTML output for back-end row displsy
+       *
+       * @filter cfct-row-admin-html
+       */
+      public function _row_admin_html( $html, $classname = false, $classes = false, $opts = false ) {
+
+        //** Get just the unique class or row */
+        $unique_class = implode( '.', (array) $classes );
+
+        //** Load custom class if it exists from row $opts
+        $current_setting = $opts[ 'custom_class' ] ? $opts[ 'custom_class' ] : '';
+
+        $html = str_replace( '<a class="cfct-row-delete" href="#">Remove</a>', '<a class="cfct-row-delete" href="#">Remove</a><a class="cfct-add-row-class" data-current-setting="' . $current_setting . '" data-row-class="' . $unique_class . '" title="Set, or change, custom row class." href="#">Change Class</a>', $html );
+
+        return $html;
+
+      }
+
+      /**
        * Initialize.
        *
        */
@@ -229,7 +337,7 @@ namespace UsabilityDynamics\Theme {
         $this->_builder = $cfct_build;
 
         // Remove default Scripts and Styles.
-        wp_deregister_script( 'cfct-build-js');
+        wp_deregister_script( 'cfct-build-js' );
         wp_deregister_style( 'cfct-build-css' );
 
         // Force complete removal. (otherwise throws notice).
@@ -274,6 +382,9 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
+       * @param $ret
+       * @param $data
+       *
        * @return array
        */
       public function module_html( $ret, $data ) {
@@ -293,7 +404,7 @@ namespace UsabilityDynamics\Theme {
 
         foreach( (array) $this->row_directories as $directory ) {
           if( is_dir( $directory ) ) {
-            $_verified[] = $directory;
+            $_verified[ ] = $directory;
           }
         }
 
@@ -314,7 +425,7 @@ namespace UsabilityDynamics\Theme {
 
         foreach( (array) $this->module_directories as $directory ) {
           if( is_dir( $directory ) ) {
-            $_verified[] = $directory;
+            $_verified[ ] = $directory;
           }
         }
 
@@ -439,13 +550,14 @@ namespace UsabilityDynamics\Theme {
 
         if( $cfct_build instanceof \cfct_build_common ) {
           $cfct_build->template->register_type( 'module', $classname, $args );
+
           return true;
         } else {
           return false;
         }
 
       }
-      
+
       /**
        * DeRegister Module
        *
@@ -466,6 +578,7 @@ namespace UsabilityDynamics\Theme {
 
         if( $cfct_build instanceof \cfct_build_common ) {
           $cfct_build->template->deregister_type( 'module', $classname );
+
           return true;
         } else {
           return false;
@@ -533,6 +646,8 @@ namespace UsabilityDynamics\Theme {
 
       /**
        * Style -> image mapping for style chooser
+       *
+       * @param $type
        *
        * @return array
        */
@@ -633,9 +748,10 @@ namespace UsabilityDynamics\Theme {
       /**
        * Apply the custom theme style
        *
-       * @param string $class_string - base module wrapper classes
-       * @param array  $data - module save data
+       * @param       $class
+       * @param array $data - module save data
        *
+       * @internal param string $class_string - base module wrapper classes
        * @return string
        */
       public static function cfct_module_wrapper_classes( $class, $data ) {
