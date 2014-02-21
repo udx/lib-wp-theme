@@ -102,6 +102,8 @@ namespace UsabilityDynamics\Theme {
         add_action( 'template_redirect', array( $this, '_redirect' ) );
         add_filter( 'intermediate_image_sizes_advanced', array( $this, '_image_sizes' ));
         add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_scripts' ), 500 );
+        add_action( 'print_footer_scripts', array( $this, '_use_footer_scripts' ), 5 );
+        add_action( 'wp_print_footer_scripts', array( $this, '_print_footer_scripts' ), 5 );
         add_action( 'widgets_init', array( $this, '_widgets' ), 100 );
         add_filter( 'post_class', array( $this, '_post_class' ), 100, 4 );
 
@@ -188,10 +190,13 @@ namespace UsabilityDynamics\Theme {
        */
       public function scripts( $options = array() ) {
 
-        //wp_deregister_script( 'jquery' );
+        // wp_deregister_script( 'jquery' );
+        // wp_register_script( 'jquery', 'http://cdn.udx.io/vendor/jquery.js', array(), '1.10.2', true );
 
-        wp_register_script( 'jquery', 'http://cdn.udx.io/vendor/jquery.js', array(), '1.10.2', true );
-        wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), isset( $this->version ) ? $this->version : '3.0.0', true );
+        if ( !wp_script_is( 'app.require', 'registered' ) ) {}
+
+        // Enquue in header.
+        wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), isset( $this->version ) ? $this->version : '3.0.0', false );
 
         $settings = array(
           'name' => $name,
@@ -213,8 +218,8 @@ namespace UsabilityDynamics\Theme {
               'name' => $name,
               'url' => $_settings,
               'version' => $this->version,
-              'footer' => true,
-              'deps' => array()
+              'deps' => array( 'app.require' ),
+              'footer' => true
             ));
 
           }
@@ -242,9 +247,8 @@ namespace UsabilityDynamics\Theme {
           return \Jetpack_Widget_Conditions::sidebars_widgets( $widget_areas );
         }
 
-        die('shit');
-
       }
+
       /**
        * Register Widget Areas.
        *
@@ -282,14 +286,45 @@ namespace UsabilityDynamics\Theme {
         }
 
       }
+
       /**
        * Enqueue AMD/Theme Scripts.
        *
        */
-      public function _enqueue_scripts() {
+      public function _use_footer_scripts() {
+        return true;
+      }
+
+      public function _print_footer_scripts() {
+        global $wp_scripts;
+
+        //die(json_encode($wp_scripts));
+        die( '<pre>' . print_r( $wp_scripts->queue, true ) . '</pre>' );
+        $_script = array( 'if( "function" === typeof require ) { require(["http://umesouthpadre.com/assets/scripts/jquery.flexslider.js?ver=0.1.0"]) };' );
+
+        // Dequeue All Third Party Scripts.
+        foreach( (array) $wp_scripts->queue as $script ) {
+          echo "<!--" . $script . "-->\n";
+          wp_dequeue_script( $script );
+        }
+
+
+        echo "\n" . '<script id="require-amd-scripts" type="text/javascript">' . implode( "\n", $_script ) . "</script>\n";
 
         foreach( (array) $this->get( '_scripts' ) as $_name => $settings ) {
-          wp_register_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
+          //wp_enqueue_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
+        }
+
+      }
+      public function _enqueue_scripts() {
+        global $wp_scripts;
+
+        //die(json_encode($wp_scripts))
+        //die( '<pre>' . print_r( $wp_scripts, true ) . '</pre>' );
+
+        // Enqueue All AMD Scripts
+        foreach( (array) $this->get( '_scripts' ) as $_name => $settings ) {
+          wp_enqueue_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
         }
 
       }

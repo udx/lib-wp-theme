@@ -175,11 +175,10 @@ namespace UsabilityDynamics\Theme {
         add_filter( 'cfct-get-extras-modules-js-admin', array( get_class(), '_theme_chooser_js' ), 10, 1 );
 
         add_filter( 'cfct-build-display-class', array( $this, 'cfct_build_display_class' ), 10, 4 );
-        add_action( 'wp_ajax_flawless_cb_row_class', array( $this, 'flawless_cb_row_class' ) );
+        add_action( 'wp_ajax_flawless_cb_row_class', array( $this, '_cb_row_class' ) );
         add_action( 'cfct-row-admin-html', array( $this, '_row_admin_html' ) );
         add_action( 'edit_form_after_editor', array( $this, 'edit_form_after_editor' ), 500 );
         add_action( 'edit_form_top', array( $this, 'edit_form_top' ), 500 );
-        add_action( 'admin_body_class', array( $this, '_admin_body_class' ), 500 );
         add_action( 'admin_enqueue_scripts', array( $this, '_admin_enqueue_scripts' ), 500 );
 
         add_theme_support( 'carrington-build' );
@@ -190,20 +189,27 @@ namespace UsabilityDynamics\Theme {
 
       }
 
+      /**
+       * Open UDX Editor Wrapper
+       *
+       * @param $current
+       */
+      public function edit_form_top( $current ) {
+        echo '<div data-requires="udx.wp.editor" class="udx-wp-editor">';
+      }
+
+      /**
+       * Close UDX Editor Wrapper
+       *
+       * @param $current
+       */
       public function edit_form_after_editor( $current ) {
         echo "</div>";
       }
 
-      public function edit_form_top( $current ) {
-        echo '<div data-requires="udx.wp.editor" class="">';
-      }
-      public function _admin_body_class( $current ) {
-        return $current;
-      }
-
       public function _admin_enqueue_scripts() {
+        wp_enqueue_script( 'app.require' );
 
-        //wp_enqueue_script( 'app.require' );
 
       }
 
@@ -269,7 +275,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @author potanin@UD
        */
-      public function flawless_cb_row_class() {
+      public function _cb_row_class() {
 
         $post_id   = $_REQUEST[ 'post_id' ];
         $row_id    = $_REQUEST[ 'row_id' ];
