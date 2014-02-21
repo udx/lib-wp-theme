@@ -203,7 +203,7 @@ namespace UsabilityDynamics\Theme {
 
       public function _admin_enqueue_scripts() {
 
-        wp_enqueue_script( 'app.require' );
+        //wp_enqueue_script( 'app.require' );
 
       }
 
