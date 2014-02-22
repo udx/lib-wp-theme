@@ -208,20 +208,19 @@ namespace UsabilityDynamics\Theme {
         // wp_register_script( 'jquery', 'http://cdn.udx.io/vendor/jquery.js', array(), '1.10.2', true );
 
         if( !wp_script_is( 'app.require', 'registered' ) ) {
+          wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), isset( $this->version ) ? $this->version : '3.0.0', false );
         }
 
-        // Enquue in header.
-        wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), isset( $this->version ) ? $this->version : '3.0.0', false );
-
-        $settings = array(
-          'name'    => $name,
-          'url'     => '',
-          'version' => $this->version,
-          'footer'  => true,
-          'deps'    => array()
-        );
-
         foreach( (array) $options as $name => $_settings ) {
+
+          // Register
+          $settings = array(
+            'name'    => $name,
+            'url'     => '',
+            'version' => $this->version,
+            'footer'  => true,
+            'deps'    => array()
+          );
 
           if( is_array( $_settings ) ) {
             $settings = (object) Utility::extend( $settings, $_settings );
@@ -235,7 +234,7 @@ namespace UsabilityDynamics\Theme {
               'version' => $this->version,
               'deps'    => array( 'app.require' ),
               'footer'  => true
-            ) );
+            ));
 
           }
 
@@ -324,11 +323,29 @@ namespace UsabilityDynamics\Theme {
 
         // Dequeue All Third Party Scripts.
         foreach( (array) $wp_scripts->queue as $script ) {
-          $_config[ 'deps' ][ ] = $wp_scripts->registered[ $script ]->src;
+
+          if( $script !== 'app.require' ) {
+
+            if( isset( $wp_scripts->registered[ $script ]->deps ) && $wp_scripts->registered[ $script ]->deps ) {
+
+              foreach( (array) $wp_scripts->registered[ $script ]->deps as $_dep ) {
+                $_config[ 'deps' ][] = $wp_scripts->registered[ $_dep ]->src;
+              }
+
+            }
+
+            $_config[ 'deps' ][] = $wp_scripts->registered[ $script ]->src;
+
+          }
+
           wp_dequeue_script( $script );
+
         }
 
-        echo "\n" . '<script id="require-amd-scripts" type="text/javascript">if( "function" === typeof require ) {require.config(' . json_encode( $_config ) . ");}</script>\n";
+        $_config[ 'deps' ] = $_config[ 'deps' ];
+        // $_config[ 'deps' ] = array_filter( array_unique( $_config[ 'deps' ] ) );
+
+        echo "\n" . '<script id="require-amd-scripts" type="text/javascript">if( "function" === typeof require ) { require.config(' . json_encode( $_config ) . "); }</script>\n";
 
       }
 
@@ -341,6 +358,8 @@ namespace UsabilityDynamics\Theme {
 
         //die(json_encode($wp_scripts))
         //die( '<pre>' . print_r( $wp_scripts, true ) . '</pre>' );
+
+        wp_enqueue_script( 'app.require' );
 
         // Enqueue All AMD Scripts
         foreach( (array) $this->get( '_scripts' ) as $_name => $settings ) {
