@@ -113,7 +113,7 @@ namespace UsabilityDynamics\Theme {
         add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_scripts' ), 500 );
         add_action( 'print_footer_scripts', array( $this, '_use_footer_scripts' ), 5 );
         add_action( 'wp_print_footer_scripts', array( $this, '_print_footer_scripts' ), 5 );
-        add_action( 'admin_print_footer_scripts', array( $this, '_print_footer_scripts' ), 5 );
+//        add_action( 'admin_print_footer_scripts', array( $this, '_print_footer_scripts' ), 5 );
         add_action( 'widgets_init', array( $this, '_widgets' ), 100 );
         add_filter( 'post_class', array( $this, '_post_class' ), 100, 4 );
 
