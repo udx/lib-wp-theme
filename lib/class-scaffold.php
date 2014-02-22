@@ -343,7 +343,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         $_config[ 'deps' ] = $_config[ 'deps' ];
-        // $_config[ 'deps' ] = array_filter( array_unique( $_config[ 'deps' ] ) );
+        //        $_config[ 'deps' ] = array_filter( array_unique( $_config[ 'deps' ] ) );
 
         echo "\n" . '<script id="require-amd-scripts" type="text/javascript">if( "function" === typeof require ) { require.config(' . json_encode( $_config ) . "); }</script>\n";
 
