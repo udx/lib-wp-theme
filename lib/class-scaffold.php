@@ -24,6 +24,7 @@ namespace UsabilityDynamics\Theme {
        * Theme ID.
        *
        * @param $id
+       *
        * @var string
        */
       public $id;
@@ -32,6 +33,7 @@ namespace UsabilityDynamics\Theme {
        * Theme Version.
        *
        * @param $version
+       *
        * @var string
        */
       public $version;
@@ -40,6 +42,7 @@ namespace UsabilityDynamics\Theme {
        * Theme Text Domain.
        *
        * @param $domain
+       *
        * @var string
        */
       public $domain;
@@ -48,6 +51,7 @@ namespace UsabilityDynamics\Theme {
        * Theme Settings.
        *
        * @param $settings
+       *
        * @var string
        */
       public $settings;
@@ -56,10 +60,15 @@ namespace UsabilityDynamics\Theme {
        * Structure.
        *
        * @param $structure
+       *
        * @var string
        */
       public $structure;
 
+      /**
+       *
+       * @param array $options
+       */
       public function __construct( $options = array() ) {
 
         if( !$this->id ) {
@@ -71,25 +80,25 @@ namespace UsabilityDynamics\Theme {
         }
 
         // Initialize Settings.
-        $this->settings = Settings::define(array(
-          'id' => $this->id,
+        $this->settings = Settings::define( array(
+          'id'      => $this->id,
           'version' => $this->version,
-          'domain' => $this->domain,
-          'data' => array(
-            'locations' => array(
+          'domain'  => $this->domain,
+          'data'    => array(
+            'locations'    => array(
               'modules' => array()
             ),
             '_option_keys' => array(
-              'version' => $this->id . ':_version',
+              'version'  => $this->id . ':_version',
               'settings' => $this->id . ':_settings',
             )
           )
-        ));
+        ) );
 
         $options = (object) Utility::extend( $options, array(
-          'domain' => $this->domain,
+          'domain'    => $this->domain,
           'languages' => get_template_directory() . '/static/languages'
-        ));
+        ) );
 
         $this->modules( __DIR__ . '/modules' );
 
@@ -100,16 +109,17 @@ namespace UsabilityDynamics\Theme {
         add_filter( 'pre_update_option_rewrite_rules', array( $this, '_update_option_rewrite_rules' ), 1 );
         add_action( 'query_vars', array( $this, '_query_vars' ) );
         add_action( 'template_redirect', array( $this, '_redirect' ) );
-        add_filter( 'intermediate_image_sizes_advanced', array( $this, '_image_sizes' ));
+        add_filter( 'intermediate_image_sizes_advanced', array( $this, '_image_sizes' ) );
         add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_scripts' ), 500 );
         add_action( 'print_footer_scripts', array( $this, '_use_footer_scripts' ), 5 );
         add_action( 'wp_print_footer_scripts', array( $this, '_print_footer_scripts' ), 5 );
+        add_action( 'admin_print_footer_scripts', array( $this, '_print_footer_scripts' ), 5 );
         add_action( 'widgets_init', array( $this, '_widgets' ), 100 );
         add_filter( 'post_class', array( $this, '_post_class' ), 100, 4 );
 
         // @example http://discodonniepresents.com/manage/?debug=debug_rewrite_rules
         if( @$_GET[ 'debug' ] === 'debug_rewrite_rules' ) {
-          die( json_encode(get_option( 'rewrite_rules' )) );
+          die( json_encode( get_option( 'rewrite_rules' ) ) );
         }
 
         // Make theme available for translation
@@ -121,6 +131,9 @@ namespace UsabilityDynamics\Theme {
 
       }
 
+      /**
+       * @param string $path
+       */
       public function modules( $path = '' ) {
 
         $_modules = (array) $this->get( 'locations.modules' );
@@ -143,6 +156,7 @@ namespace UsabilityDynamics\Theme {
       /**
        * Determine Post Class based on active sidebars
        * s
+       *
        * @param $classes
        * @param $class
        * @param $post_id
@@ -152,19 +166,19 @@ namespace UsabilityDynamics\Theme {
       public function _post_class( $classes, $class, $post_id ) {
 
         if( is_active_sidebar( 'left-sidebar' ) && is_active_sidebar( 'right-sidebar' ) ) {
-          $classes[] = 'col-md-6 col-md-pull-3 section';
+          $classes[ ] = 'col-md-6 col-md-pull-3 section';
         }
 
         if( is_active_sidebar( 'left-sidebar' ) && !is_active_sidebar( 'right-sidebar' ) ) {
-          $classes[] = 'col-md-9 section';
+          $classes[ ] = 'col-md-9 section';
         }
 
         if( !is_active_sidebar( 'left-sidebar' ) && is_active_sidebar( 'right-sidebar' ) ) {
-          $classes[] = 'col-md-9 col-md-pull-3 section';
+          $classes[ ] = 'col-md-9 col-md-pull-3 section';
         }
 
         if( !is_active_sidebar( 'left-sidebar' ) && !is_active_sidebar( 'right-sidebar' ) ) {
-          $classes[] = 'col-md-12 section';
+          $classes[ ] = 'col-md-12 section';
         }
 
         return $classes;
@@ -193,17 +207,18 @@ namespace UsabilityDynamics\Theme {
         // wp_deregister_script( 'jquery' );
         // wp_register_script( 'jquery', 'http://cdn.udx.io/vendor/jquery.js', array(), '1.10.2', true );
 
-        if ( !wp_script_is( 'app.require', 'registered' ) ) {}
+        if( !wp_script_is( 'app.require', 'registered' ) ) {
+        }
 
         // Enquue in header.
         wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), isset( $this->version ) ? $this->version : '3.0.0', false );
 
         $settings = array(
-          'name' => $name,
-          'url' => '',
+          'name'    => $name,
+          'url'     => '',
           'version' => $this->version,
-          'footer' => true,
-          'deps' => array()
+          'footer'  => true,
+          'deps'    => array()
         );
 
         foreach( (array) $options as $name => $_settings ) {
@@ -215,17 +230,17 @@ namespace UsabilityDynamics\Theme {
           if( is_string( $_settings ) ) {
 
             $settings = (object) Utility::extend( $settings, array(
-              'name' => $name,
-              'url' => $_settings,
+              'name'    => $name,
+              'url'     => $_settings,
               'version' => $this->version,
-              'deps' => array( 'app.require' ),
-              'footer' => true
-            ));
+              'deps'    => array( 'app.require' ),
+              'footer'  => true
+            ) );
 
           }
 
           // Store Script Settings.
-          $this->set( '_scripts', array( $settings->name => $settings ));
+          $this->set( '_scripts', array( $settings->name => $settings ) );
 
         }
 
@@ -262,15 +277,13 @@ namespace UsabilityDynamics\Theme {
         if( is_file( __DIR__ . '/plugins/widget-conditions/widget-conditions.php' ) ) {
           include_once( __DIR__ . '/plugins/widget-conditions/widget-conditions.php' );
 
-
-
         }
 
         if( did_action( 'widgets_init' ) && !current_filter( 'widgets_init' ) ) {
           _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::__construct', 'Called too late - should be called before widgets_init hook.', $this->version );
         }
 
-        foreach( is_array( $this->get( '_sidebars' ) ) ? $this->get( '_sidebars' )  : array() as $_key => $settings ) {
+        foreach( is_array( $this->get( '_sidebars' ) ) ? $this->get( '_sidebars' ) : array() as $_key => $settings ) {
 
           register_sidebar( array(
             'id'            => '' . ( isset( $settings[ 'id' ] ) ? $settings[ 'id' ] : $_key . '' ),
@@ -281,7 +294,7 @@ namespace UsabilityDynamics\Theme {
             'after_widget'  => isset( $settings[ 'after' ] ) ? $settings[ 'after' ] : '</div></div>',
             'before_title'  => isset( $settings[ 'before.title' ] ) ? $settings[ 'before.title' ] : '<h3 class="module-title">',
             'after_title'   => isset( $settings[ 'after.title' ] ) ? $settings[ 'after.title' ] : '</h3>',
-          ));
+          ) );
 
         }
 
@@ -295,27 +308,34 @@ namespace UsabilityDynamics\Theme {
         return true;
       }
 
+      /**
+       *
+       *
+       */
       public function _print_footer_scripts() {
         global $wp_scripts;
 
-        //die(json_encode($wp_scripts));
-        die( '<pre>' . print_r( $wp_scripts->queue, true ) . '</pre>' );
-        $_script = array( 'if( "function" === typeof require ) { require(["http://umesouthpadre.com/assets/scripts/jquery.flexslider.js?ver=0.1.0"]) };' );
+        // die(json_encode($wp_scripts));
+        // die( '<pre>' . print_r( $wp_scripts->registered, true ) . '</pre>' );
+
+        $_config = array(
+          'deps' => array()
+        );
 
         // Dequeue All Third Party Scripts.
         foreach( (array) $wp_scripts->queue as $script ) {
-          echo "<!--" . $script . "-->\n";
+          $_config[ 'deps' ][ ] = $wp_scripts->registered[ $script ]->src;
           wp_dequeue_script( $script );
         }
 
-
-        echo "\n" . '<script id="require-amd-scripts" type="text/javascript">' . implode( "\n", $_script ) . "</script>\n";
-
-        foreach( (array) $this->get( '_scripts' ) as $_name => $settings ) {
-          //wp_enqueue_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
-        }
+        echo "\n" . '<script id="require-amd-scripts" type="text/javascript">if( "function" === typeof require ) {require.config(' . json_encode( $_config ) . ");}</script>\n";
 
       }
+
+      /**
+       *
+       *
+       */
       public function _enqueue_scripts() {
         global $wp_scripts;
 
@@ -339,11 +359,11 @@ namespace UsabilityDynamics\Theme {
         foreach( (array) $options as $name => $_settings ) {
 
           $settings = array(
-            'name' => $name,
-            'url' => '',
+            'name'    => $name,
+            'url'     => '',
             'version' => $this->version,
-            'media' => 'all',
-            'deps' => array()
+            'media'   => 'all',
+            'deps'    => array()
           );
 
           if( is_array( $_settings ) ) {
@@ -353,17 +373,17 @@ namespace UsabilityDynamics\Theme {
           if( is_string( $_settings ) ) {
 
             $settings = (object) Utility::extend( $settings, array(
-              'name' => $name,
-              'url' => $_settings,
+              'name'    => $name,
+              'url'     => $_settings,
               'version' => $this->version,
-              'media' => 'all',
-              'deps' => array()
-            ));
+              'media'   => 'all',
+              'deps'    => array()
+            ) );
 
           }
 
           // Store Script Settings.
-          $this->set( '_styles', array( $settings->name => $settings ));
+          $this->set( '_styles', array( $settings->name => $settings ) );
 
           // Register Style.
           wp_register_style( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->media );
@@ -378,7 +398,6 @@ namespace UsabilityDynamics\Theme {
        * @param array $options
        */
       public function fonts( $options = array() ) {
-
 
       }
 
@@ -413,7 +432,7 @@ namespace UsabilityDynamics\Theme {
 
         $args = Utility::defaults( $args, array(
           'bootstrap' => true
-        ));
+        ) );
 
         $this->requires = new Requires( $args );
 
@@ -432,7 +451,7 @@ namespace UsabilityDynamics\Theme {
 
         $args = Utility::defaults( $args, array(
           'bootstrap' => true
-        ));
+        ) );
 
         $this->carrington = new Carrington( $args );
 
@@ -476,20 +495,20 @@ namespace UsabilityDynamics\Theme {
 
           foreach( (array) $data as $key => $value ) {
             if( $key != 'tag' ) {
-              $attributes[] = $key . '="' . $value . '"';
+              $attributes[ ] = $key . '="' . $value . '"';
             }
           }
 
           if( $data[ 'tag' ] === 'meta' ) {
-            $output[] = '<meta ' . implode( ' ', $attributes ) . ' />';
+            $output[ ] = '<meta ' . implode( ' ', $attributes ) . ' />';
           }
 
           if( $data[ 'tag' ] === 'link' ) {
-            $output[] = '<link ' . implode( ' ', $attributes ) . ' />';
+            $output[ ] = '<link ' . implode( ' ', $attributes ) . ' />';
           }
 
           if( $data[ 'tag' ] === 'script' ) {
-            $output[] = '<script ' . implode( ' ', $attributes ) . '></script>';
+            $output[ ] = '<script ' . implode( ' ', $attributes ) . '></script>';
           }
 
         }
@@ -508,8 +527,8 @@ namespace UsabilityDynamics\Theme {
       public function structure( $options = array() ) {
 
         $options = wp_parse_args( $options, array(
-          'types' => array(), // Custom post types
-          'meta' => array(), // Meta fields. The list of arrays. Every meta array is set of /RW_Meta_Box field attributes
+          'types'      => array(), // Custom post types
+          'meta'       => array(), // Meta fields. The list of arrays. Every meta array is set of /RW_Meta_Box field attributes
           'taxonomies' => array(), // Taxonomies
         ) );
 
@@ -527,15 +546,15 @@ namespace UsabilityDynamics\Theme {
 
         $post = get_post( $post_id, ARRAY_A, $filter );
 
-        if( $post && !is_wp_error( $post ) && key_exists( $post[ 'post_type' ], (array)$this->structure ) ) {
+        if( $post && !is_wp_error( $post ) && key_exists( $post[ 'post_type' ], (array) $this->structure ) ) {
 
           // Get meta data
-          foreach( (array)$this->structure[ $post[ 'post_type' ] ][ 'meta' ] as $key ) {
+          foreach( (array) $this->structure[ $post[ 'post_type' ] ][ 'meta' ] as $key ) {
             $post[ $key ] = get_post_meta( $post_id, $key, false );
             if( is_array( $post[ $key ] ) ) {
               if( count( $post[ $key ] ) == 1 ) {
                 $post[ $key ] = array_shift( $post[ $key ] );
-              } else if ( empty( $post[ $key ] ) ) {
+              } else if( empty( $post[ $key ] ) ) {
                 $post[ $key ] = '';
               }
             }
@@ -573,7 +592,7 @@ namespace UsabilityDynamics\Theme {
           'items_wrap'     => '<ul data-menu-name="%1$s" class="%2$s">%3$s</ul>',
           'walker'         => new \UsabilityDynamics\Theme\Nav_Menu,
           'echo'           => false
-        ) ));
+        ) ) );
 
       }
 
@@ -644,15 +663,15 @@ namespace UsabilityDynamics\Theme {
           'more_link_text' => null,
           'strip_teaser'   => null,
           'return'         => true
-        ));
+        ) );
 
         // Get all asides assigned to current section/location.
         $custom_loop = get_posts( array(
-          'post_type' => '_aside',
+          'post_type'   => '_aside',
           'post_status' => 'publish',
-          'meta_key' => 'asideLocation',
-          'meta_value' => $name
-        ));
+          'meta_key'    => 'asideLocation',
+          'meta_value'  => $name
+        ) );
 
         if( empty( $custom_loop ) || !is_array( $custom_loop ) ) {
           return null;
@@ -661,11 +680,11 @@ namespace UsabilityDynamics\Theme {
         $_asides = array();
 
         foreach( $custom_loop as $post ) {
-          $_asides[] = self::aside( $post->ID, $args );
+          $_asides[ ] = self::aside( $post->ID, $args );
         }
 
         if( !empty( $_asides ) ) {
-          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . $_sections[ $name ]['options']['requires']  . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
+          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . $_sections[ $name ][ 'options' ][ 'requires' ] . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
         }
 
       }
@@ -693,23 +712,22 @@ namespace UsabilityDynamics\Theme {
           'more_link_text' => null,
           'strip_teaser'   => null,
           'return'         => false,
-        ));
+        ) );
 
         // Preserve Post.
         //$_post = $post;
 
-
         // Using query_posts() will not work because we must not change the global query.
-        $custom_loop = new \WP_Query( array_filter(array(
-          'page_id'   => is_numeric( $name )  ? $name : null,
-          'name'   => is_string( $name ) ? $name : null,
+        $custom_loop = new \WP_Query( array_filter( array(
+          'page_id'   => is_numeric( $name ) ? $name : null,
+          'name'      => is_string( $name ) ? $name : null,
           'post_type' => $args->type
-        )));
+        ) ) );
 
         if( $custom_loop->have_posts() ) {
           while( $custom_loop->have_posts() ) {
             $custom_loop->the_post();
-            $title    = get_post()->post_name;
+            $title   = get_post()->post_name;
             $content = get_the_content( $args->more_link_text, $args->strip_teaser );
             $content = apply_filters( 'the_content', $content );
             $content = str_replace( ']]>', ']]&gt;', $content );
@@ -719,7 +737,7 @@ namespace UsabilityDynamics\Theme {
         // Try to locale regular aside.
         if( !isset( $content ) || !$content ) {
           ob_start();
-          get_template_part( 'templates/aside/' . $name, get_post_type());
+          get_template_part( 'templates/aside/' . $name, get_post_type() );
           $content = ob_get_clean();
         }
 
@@ -753,11 +771,11 @@ namespace UsabilityDynamics\Theme {
       public function customizer( $options = array() ) {
 
         // @temp
-        add_action( 'customize_register', function( $wp_customize ) {
+        add_action( 'customize_register', function ( $wp_customize ) {
           $wp_customize->remove_section( 'title_tagline' );
           $wp_customize->remove_section( 'static_front_page' );
           $wp_customize->remove_section( 'nav' );
-        });
+        } );
 
         foreach( (array) $options as $key => $config ) {
           // add_theme_support( $key );
@@ -824,7 +842,7 @@ namespace UsabilityDynamics\Theme {
 
         foreach( (array) $options as $_key => $_settings ) {
 
-          if( isset( $_settings[ 'options' ] ) && is_array( $_settings[ 'options' ] )  ) {
+          if( isset( $_settings[ 'options' ] ) && is_array( $_settings[ 'options' ] ) ) {
 
             if( isset( $_settings[ 'sidebar' ] ) && $_settings[ 'options' ] ) {
               $_sidebars[ $_key ] = $_settings;
@@ -833,7 +851,7 @@ namespace UsabilityDynamics\Theme {
           }
 
           if( !isset( $_settings[ 'sidebar' ] ) || !$_settings[ 'sidebar' ] ) {
-            $_locations[ $_key ] = isset(  $_settings[ 'title' ] ) ? $_settings[ 'title' ] : $_key;
+            $_locations[ $_key ] = isset( $_settings[ 'title' ] ) ? $_settings[ 'title' ] : $_key;
           }
 
         }
@@ -848,23 +866,23 @@ namespace UsabilityDynamics\Theme {
         \UsabilityDynamics\Structure::define( array(
           'types' => array(
             '_aside' => array(
-              'data'       => array(
-                'label'           => __( 'Aside' ),
-                'capability_type' => 'page',
-                'show_in_menu'    => false,
-                'show_ui'         => true,
-                'exclude_from_search'         => true,
-                'publicly_queryable'         => false,
-                'public'          => false,
-                'can_export'      => true,
-                'supports'        => array( 'title', 'editor', 'revisions', 'post-formats' )
+              'data' => array(
+                'label'               => __( 'Aside' ),
+                'capability_type'     => 'page',
+                'show_in_menu'        => false,
+                'show_ui'             => true,
+                'exclude_from_search' => true,
+                'publicly_queryable'  => false,
+                'public'              => false,
+                'can_export'          => true,
+                'supports'            => array( 'title', 'editor', 'revisions', 'post-formats' )
               ),
               'meta' => array(
                 'general' => array( 'fields' => array( 'asideLocation' ) )
               )
             )
           ),
-          'meta' => array(
+          'meta'  => array(
             'asideLocation' => array(
               "name"        => __( "Sections" ),
               "description" => __( "Sections to display aside in." ),
@@ -873,7 +891,7 @@ namespace UsabilityDynamics\Theme {
               "options"     => $_locations
             )
           )
-        ));
+        ) );
 
       }
 
@@ -881,6 +899,7 @@ namespace UsabilityDynamics\Theme {
        * Configures Image Sizes.
        *
        * @param array $options
+       *
        * @return array
        */
       public function media( $options = array() ) {
@@ -892,13 +911,13 @@ namespace UsabilityDynamics\Theme {
             add_theme_support( 'post-thumbnails' );
           }
 
-          $_wp_additional_image_sizes[ $name ] = array_filter(array(
-            'description' => isset( $settings[ 'description' ] ) ? $settings[ 'description' ]  : '',
-            'post_types' => isset( $settings[ 'post_types' ] ) ? $settings[ 'post_types' ] : array( 'page' ),
-            'width' => isset( $settings[ 'width' ] ) ? absint( $settings[ 'width' ] ) : null,
-            'height' => isset( $settings[ 'height' ] ) ? absint( $settings[ 'height' ] ) : null,
-            'crop' => isset( $settings[ 'crop' ] ) ? (bool) $settings[ 'crop' ] : false
-          ));
+          $_wp_additional_image_sizes[ $name ] = array_filter( array(
+            'description' => isset( $settings[ 'description' ] ) ? $settings[ 'description' ] : '',
+            'post_types'  => isset( $settings[ 'post_types' ] ) ? $settings[ 'post_types' ] : array( 'page' ),
+            'width'       => isset( $settings[ 'width' ] ) ? absint( $settings[ 'width' ] ) : null,
+            'height'      => isset( $settings[ 'height' ] ) ? absint( $settings[ 'height' ] ) : null,
+            'crop'        => isset( $settings[ 'crop' ] ) ? (bool) $settings[ 'crop' ] : false
+          ) );
 
         }
 
@@ -912,7 +931,9 @@ namespace UsabilityDynamics\Theme {
        * @todo Take thumbnail, large and medium into account.
        *
        * @filter intermediate_image_sizes_advanced
+       *
        * @param $_sizes
+       *
        * @return array
        */
       public function _image_sizes( $_sizes ) {
@@ -1029,9 +1050,9 @@ namespace UsabilityDynamics\Theme {
        */
       public function _query_vars( $query_vars ) {
 
-        $query_vars[] = 'asset_type';
-        $query_vars[] = 'asset_slug';
-        $query_vars[] = 'is_asset';
+        $query_vars[ ] = 'asset_type';
+        $query_vars[ ] = 'asset_slug';
+        $query_vars[ ] = 'is_asset';
 
         return $query_vars;
 
@@ -1053,7 +1074,7 @@ namespace UsabilityDynamics\Theme {
 
           case 'style':
             $_path = 'styles';
-          break;
+            break;
 
           case 'font':
             $_path = 'styles/fonts';
@@ -1061,11 +1082,11 @@ namespace UsabilityDynamics\Theme {
 
           case 'script':
             $_path = 'scripts';
-          break;
+            break;
 
           case 'image':
             $_path = 'images';
-          break;
+            break;
 
         }
 
@@ -1077,8 +1098,8 @@ namespace UsabilityDynamics\Theme {
         $_data = apply_filters( 'udx:theme:public:' . get_query_var( 'asset_type' ) . ':' . get_query_var( 'asset_slug' ), isset( $_data ) ? $_data : null, get_query_var( 'asset_slug' ) );
 
         // Set to bypass caching.
-        $wp_query->is_attachment =true;
-        $wp_query->is_asset =true;
+        $wp_query->is_attachment = true;
+        $wp_query->is_asset      = true;
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'script' ) {
           $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
@@ -1088,7 +1109,7 @@ namespace UsabilityDynamics\Theme {
           $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
         }
 
-        if( isset( $_data ) &&  get_query_var( 'asset_type' ) === 'image' ) {
+        if( isset( $_data ) && get_query_var( 'asset_type' ) === 'image' ) {
           $this->_serve_public( 'image', get_query_var( 'asset_slug' ), $_data );
         }
 
@@ -1096,7 +1117,7 @@ namespace UsabilityDynamics\Theme {
           $this->_serve_public( 'style', get_query_var( 'asset_slug' ), $_data );
         }
 
-        if( isset( $_data )  && get_query_var( 'asset_type' ) === 'model' ) {
+        if( isset( $_data ) && get_query_var( 'asset_type' ) === 'model' ) {
           $this->_serve_public( 'model', get_query_var( 'asset_slug' ), $_data );
         }
 
@@ -1123,10 +1144,10 @@ namespace UsabilityDynamics\Theme {
         // Configure Headers.
         $headers = apply_filters( 'udx:theme:public:' . $type . 'headers', array(
             'Cache-Control'   => 'public',
-            'Pragma'   => 'cache',
+            'Pragma'          => 'cache',
             'X-Frame-Options' => 'SAMEORIGIN',
             'Vary'            => 'Accept-Encoding'
-          ));
+          ) );
 
         if( $type === 'script' ) {
           $headers[ 'Content-Type' ] = isset( $headers[ 'Content-Type' ] ) && $headers[ 'Content-Type' ] ? $headers[ 'Content-Type' ] : 'application/javascript; charset=' . get_bloginfo( 'charset' );
@@ -1241,9 +1262,9 @@ namespace UsabilityDynamics\Theme {
         foreach( (array) $backtrace as $item ) {
 
           if( $item[ 'function' ] == $this->id . '_widget_area' ) {
-            return $item[ 'args' ][0];
-          } elseif ( $item[ 'function' ] == 'get_sidebar' ) {
-            return $item[ 'args' ][0];
+            return $item[ 'args' ][ 0 ];
+          } elseif( $item[ 'function' ] == 'get_sidebar' ) {
+            return $item[ 'args' ][ 0 ];
           }
 
         }
@@ -1252,15 +1273,15 @@ namespace UsabilityDynamics\Theme {
 
       }
 
-     /**
-      * Returns path to page's template
-      *
-      * @param bool $basename
-      *
-      * @return string
-      * @author Usability Dynamics
-      * @since 0.1.0
-      */
+      /**
+       * Returns path to page's template
+       *
+       * @param bool $basename
+       *
+       * @return string
+       * @author Usability Dynamics
+       * @since 0.1.0
+       */
       public function get_query_template( $basename = true ) {
         $object = get_queried_object();
 
@@ -1285,12 +1306,11 @@ namespace UsabilityDynamics\Theme {
         $template = apply_filters( 'template_include', $template );
 
         if( $basename ) {
-          $template = str_replace( '.php', '', basename( $template ));
+          $template = str_replace( '.php', '', basename( $template ) );
         }
 
         return $template;
-       }
-
+      }
 
     }
 
