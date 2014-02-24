@@ -3,7 +3,7 @@
  * Theme Scaffolding.
  *
  * @author team@UD
- * @version 0.2.5
+ * @version 0.2.0
  * @namespace UsabilityDynamics
  * @module Theme
  * @author potanin@UD
@@ -500,7 +500,7 @@ namespace UsabilityDynamics\Theme {
       /**
        * Print Head Tags.
        *
-       * @since 0.2.5
+       * @since 0.2.0
        * @author potanin@UD
        * @method wp_head
        */
