@@ -703,7 +703,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         if( !empty( $_asides ) ) {
-          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . (!empty($_sections[ $name ][ 'options' ])?$_sections[ $name ][ 'options' ][ 'requires' ]:'') . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
+          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . (!empty($_sections[ $name ][ 'options' ])&&!empty($_sections[ $name ][ 'options' ][ 'requires' ])?$_sections[ $name ][ 'options' ][ 'requires' ]:'') . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
         }
 
       }
