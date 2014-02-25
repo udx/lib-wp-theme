@@ -3,7 +3,7 @@
  * Theme Scaffolding.
  *
  * @author team@UD
- * @version 0.2.5
+ * @version 0.2.0
  * @namespace UsabilityDynamics
  * @module Theme
  * @author potanin@UD
@@ -343,7 +343,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         $_config[ 'deps' ] = $_config[ 'deps' ];
-        // $_config[ 'deps' ] = array_filter( array_unique( $_config[ 'deps' ] ) );
+        //        $_config[ 'deps' ] = array_filter( array_unique( $_config[ 'deps' ] ) );
 
         echo "\n" . '<script id="require-amd-scripts" type="text/javascript">if( "function" === typeof require ) { require.config(' . json_encode( $_config ) . "); }</script>\n";
 
@@ -500,7 +500,7 @@ namespace UsabilityDynamics\Theme {
       /**
        * Print Head Tags.
        *
-       * @since 0.2.5
+       * @since 0.2.0
        * @author potanin@UD
        * @method wp_head
        */
@@ -703,7 +703,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         if( !empty( $_asides ) ) {
-          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . $_sections[ $name ][ 'options' ][ 'requires' ] . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
+          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . (!empty($_sections[ $name ][ 'options' ])&&!empty($_sections[ $name ][ 'options' ][ 'requires' ])?$_sections[ $name ][ 'options' ][ 'requires' ]:'') . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
         }
 
       }

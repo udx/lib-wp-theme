@@ -1,6 +1,6 @@
 {
   "name": "usabilitydynamics/lib-wp-theme",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "library",
   "description": "WordPress Theme bootstrap.",
   "author": {
@@ -24,7 +24,17 @@
     "UsabilityDynamics/lib-wp-rpc": "master"
   },
   "autoload": {
-    "classmap": [ "lib" ]
+    "classmap": [
+      "lib/plugins",
+      "lib/class-carrington.php",
+      "lib/class-customizer.php",
+      "lib/class-module.php",
+      "lib/class-requires.php",
+      "lib/class-scaffold.php",
+      "lib/class-script.php",
+      "lib/class-settings.php",
+      "lib/class-utility.php"
+    ]
   },
   "license": "GPL-2.0"
 }
