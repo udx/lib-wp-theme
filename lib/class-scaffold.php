@@ -33,6 +33,7 @@ namespace UsabilityDynamics\Theme {
        * Theme Version.
        *
        * @param $version
+       *
        * @var string
        */
       public $version;
