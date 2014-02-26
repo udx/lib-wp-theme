@@ -33,7 +33,6 @@ namespace UsabilityDynamics\Theme {
        * Theme Version.
        *
        * @param $version
-       *
        * @var string
        */
       public $version;
@@ -64,6 +63,15 @@ namespace UsabilityDynamics\Theme {
        * @var string
        */
       public $structure;
+
+      /**
+       * AMD Requires Instance.
+       *
+       * @param $requires
+       *
+       * @var Object
+       */
+      public $requires;
 
       /**
        *
@@ -105,15 +113,43 @@ namespace UsabilityDynamics\Theme {
         // Set Instance Settings.
         $this->set( '_initialize', $options );
 
+        $this->set( 'version', $this->version );
+
+        $this->set( '_theme', array(
+          'rootPath' => get_theme_root(),
+          'absolutePath' => get_stylesheet_directory(),
+          'relativePath' => str_replace( WP_CONTENT_DIR, '', get_stylesheet_directory() )
+        ));
+
+        add_action( 'wp_enqueue_scripts', function () {
+          global $wp_scripts;
+          //print_head_scripts();
+          // wp_localize_script( 'menufication-js', '__test', array( 'asdfsadf' => 'asdfasfasdfsd' ));
+          //die( '<pre>' . print_r( $wp_scripts, true ) . '</pre>' );
+        }, 100 );
+
         add_filter( 'admin_menu', array( $this, 'admin_menu' ) );
         add_filter( 'pre_update_option_rewrite_rules', array( $this, '_update_option_rewrite_rules' ), 1 );
         add_action( 'query_vars', array( $this, '_query_vars' ) );
         add_action( 'template_redirect', array( $this, '_redirect' ) );
         add_filter( 'intermediate_image_sizes_advanced', array( $this, '_image_sizes' ) );
         add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_scripts' ), 500 );
-        add_action( 'print_footer_scripts', array( $this, '_use_footer_scripts' ), 5 );
-        add_action( 'wp_print_footer_scripts', array( $this, '_print_footer_scripts' ), 5 );
-//        add_action( 'admin_print_footer_scripts', array( $this, '_print_footer_scripts' ), 5 );
+
+        add_action( 'wp_default_scripts', array( $this, '_default_scripts' ), 15 );
+
+        // Disable Script Printing.
+        add_action( 'print_head_scripts', array( $this, '_use_head_scripts' ), 15 );
+        add_action( 'print_footer_scripts', array( $this, '_use_footer_scripts' ), 15 );
+
+        // Output Actual Script(s).
+        add_action( 'wp_print_scripts', array( $this, '_print_scripts' ), 5 );
+        add_action( 'wp_print_footer_scripts', array( $this, '_print_scripts' ), 5 );
+        add_action( 'admin_print_scripts', array( $this, '_print_scripts' ), 5 );
+        add_action( 'admin_print_footer_scripts', array( $this, '_print_scripts' ), 5 );
+
+        add_filter( 'udx:theme:public:model:locale', array( $this, 'locale_model' ) );
+        add_filter( 'udx:theme:public:model:config', array( $this, 'config_model' ) );
+
         add_action( 'widgets_init', array( $this, '_widgets' ), 100 );
         add_filter( 'post_class', array( $this, '_post_class' ), 100, 4 );
 
@@ -128,6 +164,52 @@ namespace UsabilityDynamics\Theme {
         }
 
         $this->_upgrade();
+
+      }
+
+      /**
+       * Get Script Locale
+       *
+       * @author Usability Dynamics
+       * @since 0.1.0
+       */
+      public function locale_model() {
+
+      }
+
+      /**
+       * Get Site Configuration
+       *
+       * @author Usability Dynamics
+       * @since 0.1.0
+       */
+      public function config_model() {
+
+        return array(
+          'settings' => array(
+            'permalinks' => get_option( 'permalink_structure' ) == '' ? false : true,
+          ),
+          'url'      => array(
+            'domain' => trim( $_home_url[ 'host' ] ? $_home_url[ 'host' ] : array_shift( explode( '/', $_home_url[ 'path' ], 2 ) ) ),
+            'ajax'   => admin_url( 'admin-ajax.php' ),
+            'home'   => admin_url( 'admin-ajax.php' ),
+            'assets' => admin_url( 'admin-ajax.php' ),
+          )
+        );
+      }
+
+      /**
+       * Extend WP_Scripts Instance.
+       *
+       * @param $scripts
+       */
+      public function _default_scripts( &$scripts ) {
+
+        // Ensure Content URL is valid.
+        $scripts->content_url = content_url();
+
+        // Add Extra Theme Directories
+        $scripts->default_dirs = array_merge( $scripts->default_dirs, array( trailingslashit( $this->get( '_theme.relativePath' ) . '/scripts' ) ) );
 
       }
 
@@ -198,7 +280,7 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
-       * Handle Script Rewrites.
+       * Register and Enqueue Footer Scripts.
        *
        * @param array $options
        */
@@ -207,8 +289,9 @@ namespace UsabilityDynamics\Theme {
         // wp_deregister_script( 'jquery' );
         // wp_register_script( 'jquery', 'http://cdn.udx.io/vendor/jquery.js', array(), '1.10.2', true );
 
+        // Register app.require as a header script.
         if( !wp_script_is( 'app.require', 'registered' ) ) {
-          wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), isset( $this->version ) ? $this->version : '3.0.0', false );
+          // wp_register_script( 'app.require', 'http://cdn.udx.io/udx.requires.js', array(), $this->get( 'version' ), false );
         }
 
         foreach( (array) $options as $name => $_settings ) {
@@ -232,7 +315,7 @@ namespace UsabilityDynamics\Theme {
               'name'    => $name,
               'url'     => $_settings,
               'version' => $this->version,
-              'deps'    => array( 'app.require' ),
+              'deps'    => array(  ),
               'footer'  => true
             ));
 
@@ -245,10 +328,15 @@ namespace UsabilityDynamics\Theme {
 
       }
 
+      /**
+       * @param array $widget_areas
+       *
+       * @return array|bool
+       */
       public function sidebars_widgets( $widget_areas = array() ) {
 
         if( empty( $widget_areas ) ) {
-          return;
+          return false;
         }
 
         $widget_areas = (array) $widget_areas;
@@ -260,6 +348,8 @@ namespace UsabilityDynamics\Theme {
         if( method_exists( '\Jetpack_Widget_Conditions', 'sidebars_widgets' ) ) {
           return \Jetpack_Widget_Conditions::sidebars_widgets( $widget_areas );
         }
+
+        return null;
 
       }
 
@@ -300,28 +390,73 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
-       * Enqueue AMD/Theme Scripts.
+       * Enable or Disable Inline Header JavaScript.
+       *
+       */
+      public function _use_head_scripts() {
+        return false;
+      }
+
+      /**
+       * Enable or Disable Inline Footer JavaScript.
+       *
+       * Prints the scripts that were queued for the footer or too late for the HTML head.
+       * Footer scripts are those added to group "1" (header scripts are in group 0)
        *
        */
       public function _use_footer_scripts() {
-        return true;
+        return false;
       }
 
       /**
        *
-       *
        */
-      public function _print_footer_scripts() {
+      public function _print_scripts() {
         global $wp_scripts;
+
+        // Header Scripts.
+        if( current_filter() === 'wp_print_scripts' ) {
+          echo '<script type="text/javascript" data-main="/assets/models/config" data-version="3.00" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
+        }
+
+        // Footer Scripts.
+        if( current_filter() === 'wp_print_footer_scripts' ) {
+
+          //die( '<pre>registered: ' . print_r( $wp_scripts->registered, true ) . '</pre>' );
+          //die( '<pre>queue: ' . print_r( $wp_scripts->queue, true ) . '</pre>' );
+          //die( '<pre>in_footer: ' . print_r( $wp_scripts->in_footer, true ) . '</pre>' );
+          //die( '<pre>to_do: ' . print_r( $wp_scripts->to_do, true ) . '</pre>' );
+          //die( '<pre>done: ' . print_r( $wp_scripts->done, true ) . '</pre>' );
+        }
+
+        if( current_filter() === 'admin_print_scripts' ) {
+
+        }
+
+        if( current_filter() === 'admin_print_footer_scripts' ) {
+
+        }
+
+        //die( '<pre>' . print_r( $wp_scripts, true ) . '</pre>' );
+
+        return;
 
         // die(json_encode($wp_scripts));
         // die( '<pre>' . print_r( $wp_scripts->registered, true ) . '</pre>' );
 
         $_config = array(
-          'deps' => array()
+          'paths' => array(),
+          'shim'  => array(),
+          'deps'  => array()
         );
 
         // Dequeue All Third Party Scripts.
+        foreach( (array) $wp_scripts->in_footer as $script ) {
+          echo "\n<!-- removing in_footer: $script -->";
+          //$_config[ 'deps' ][ ] = $wp_scripts->registered[ $script ]->src;
+          wp_dequeue_script( $script );
+        }
+
         foreach( (array) $wp_scripts->queue as $script ) {
 
           if( $script !== 'app.require' ) {
@@ -329,12 +464,14 @@ namespace UsabilityDynamics\Theme {
             if( isset( $wp_scripts->registered[ $script ]->deps ) && $wp_scripts->registered[ $script ]->deps ) {
 
               foreach( (array) $wp_scripts->registered[ $script ]->deps as $_dep ) {
-                $_config[ 'deps' ][] = $wp_scripts->registered[ $_dep ]->src;
+                $_config[ 'deps' ][ ] = $wp_scripts->registered[ $_dep ]->src;
               }
 
             }
 
-            $_config[ 'deps' ][] = $wp_scripts->registered[ $script ]->src;
+            $_config[ 'deps' ][ ] = $wp_scripts->registered[ $script ]->src;
+
+            echo "\n<!-- removing queued: $script -->";
 
           }
 
@@ -342,8 +479,10 @@ namespace UsabilityDynamics\Theme {
 
         }
 
-        $_config[ 'deps' ] = $_config[ 'deps' ];
-        //        $_config[ 'deps' ] = array_filter( array_unique( $_config[ 'deps' ] ) );
+        return;
+
+        // $_config[ 'deps' ] = $_config[ 'deps' ];
+        // $_config[ 'deps' ] = array_filter( array_unique( $_config[ 'deps' ] ) );
 
         echo "\n" . '<script id="require-amd-scripts" type="text/javascript">if( "function" === typeof require ) { require.config(' . json_encode( $_config ) . "); }</script>\n";
 
@@ -358,12 +497,14 @@ namespace UsabilityDynamics\Theme {
 
         //die(json_encode($wp_scripts))
         //die( '<pre>' . print_r( $wp_scripts, true ) . '</pre>' );
+        //wp_enqueue_script( 'app.require' );
 
-        wp_enqueue_script( 'app.require' );
+        // die( '<pre>' . print_r( $this->get( '_scripts' ), true ) . '</pre>' );
 
         // Enqueue All AMD Scripts
         foreach( (array) $this->get( '_scripts' ) as $_name => $settings ) {
-          wp_enqueue_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
+          wp_register_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
+          wp_enqueue_script( $settings->name );
         }
 
       }
@@ -1016,6 +1157,8 @@ namespace UsabilityDynamics\Theme {
        *
        * @param $key
        * @param $value
+       *
+       * @return \UsabilityDynamics\Settings
        */
       public function set( $key = null, $value = null ) {
         return $this->settings->set( $key, $value );
@@ -1026,6 +1169,8 @@ namespace UsabilityDynamics\Theme {
        *
        * @param $key
        * @param $default
+       *
+       * @return \UsabilityDynamics\type
        */
       public function get( $key = null, $default = null ) {
 
@@ -1048,11 +1193,11 @@ namespace UsabilityDynamics\Theme {
 
         // Define New Rules.
         $new_rules = array(
-          '^assets/styles/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
-          '^assets/fonts/([^/]+)/?'   => 'index.php?is_asset=1&asset_type=font&asset_slug=$matches[1]',
-          '^assets/images/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=image&asset_slug=$matches[1]',
-          '^assets/scripts/([^/]+)/?' => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
-          '^assets/models/([^/]+)/?'  => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
+          '^assets/styles/([^/]+)(.css)/?'      => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
+          '^assets/fonts/([^/]+)/?'            => 'index.php?is_asset=1&asset_type=font&asset_slug=$matches[1]',
+          '^assets/images/([^/]+)/?'           => 'index.php?is_asset=1&asset_type=image&asset_slug=$matches[1]',
+          '^assets/scripts/([^/]+)(.js)/?'      => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
+          '^assets/models/([^/]+)(.json|.js)/?' => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
         );
 
         // Return concatenated rules.
@@ -1093,19 +1238,19 @@ namespace UsabilityDynamics\Theme {
 
           case 'style':
             $_path = 'styles';
-            break;
+          break;
 
           case 'font':
             $_path = 'styles/fonts';
-            break;
+          break;
 
           case 'script':
             $_path = 'scripts';
-            break;
+          break;
 
           case 'image':
             $_path = 'images';
-            break;
+          break;
 
         }
 
@@ -1140,7 +1285,9 @@ namespace UsabilityDynamics\Theme {
           $this->_serve_public( 'model', get_query_var( 'asset_slug' ), $_data );
         }
 
-        // http_response_code( 404 );
+        if( is_callable(( 'http_response_code' ) ) ) {
+          http_response_code( 404 );
+        }
 
       }
 
