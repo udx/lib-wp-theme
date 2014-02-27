@@ -415,14 +415,17 @@ namespace UsabilityDynamics\Theme {
       public function _print_scripts() {
         global $wp_scripts;
 
+        // <script type="text/javascript" src="_.pagespeed.jo.tXBSxcB8mn.js"></script>
+
         // Header Scripts.
         if( current_filter() === 'wp_print_scripts' ) {
-          echo '<script type="text/javascript" data-main="/assets/models/config" data-version="3.00" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
+          echo '<script type="text/javascript" pagespeed_no_defer="" data-main="/assets/app.config" data-version="3.00" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
         }
+
+        return;
 
         // Footer Scripts.
         if( current_filter() === 'wp_print_footer_scripts' ) {
-
           //die( '<pre>registered: ' . print_r( $wp_scripts->registered, true ) . '</pre>' );
           //die( '<pre>queue: ' . print_r( $wp_scripts->queue, true ) . '</pre>' );
           //die( '<pre>in_footer: ' . print_r( $wp_scripts->in_footer, true ) . '</pre>' );
@@ -440,7 +443,6 @@ namespace UsabilityDynamics\Theme {
 
         //die( '<pre>' . print_r( $wp_scripts, true ) . '</pre>' );
 
-        return;
 
         // die(json_encode($wp_scripts));
         // die( '<pre>' . print_r( $wp_scripts->registered, true ) . '</pre>' );
@@ -485,7 +487,7 @@ namespace UsabilityDynamics\Theme {
         // $_config[ 'deps' ] = $_config[ 'deps' ];
         // $_config[ 'deps' ] = array_filter( array_unique( $_config[ 'deps' ] ) );
 
-        echo "\n" . '<script id="require-amd-scripts" type="text/javascript">if( "function" === typeof require ) { require.config(' . json_encode( $_config ) . "); }</script>\n";
+        // echo "\n" . '<script id="require-amd-scripts" type="text/javascript">if( "function" === typeof require ) { require.config(' . json_encode( $_config ) . "); }</script>\n";
 
       }
 
