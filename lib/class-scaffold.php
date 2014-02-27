@@ -739,7 +739,8 @@ namespace UsabilityDynamics\Theme {
         }
 
         if( !empty( $_asides ) ) {
-          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . $_sections[ $name ][ 'options' ][ 'requires' ] . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
+          $_requires = (!empty( $_sections[ $name ][ 'options' ] ) && !empty( $_sections[ $name ][ 'options' ][ 'requires' ] )) ? $_sections[ $name ][ 'options' ][ 'requires' ] : '';
+          echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . $_requires . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
         }
 
       }
