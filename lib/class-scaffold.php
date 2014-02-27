@@ -122,20 +122,13 @@ namespace UsabilityDynamics\Theme {
           'relativePath' => str_replace( WP_CONTENT_DIR, '', get_stylesheet_directory() )
         ));
 
-        add_action( 'wp_enqueue_scripts', function () {
-          global $wp_scripts;
-          //print_head_scripts();
-          // wp_localize_script( 'menufication-js', '__test', array( 'asdfsadf' => 'asdfasfasdfsd' ));
-          //die( '<pre>' . print_r( $wp_scripts, true ) . '</pre>' );
-        }, 100 );
-
         add_filter( 'admin_menu', array( $this, 'admin_menu' ) );
         add_filter( 'pre_update_option_rewrite_rules', array( $this, '_update_option_rewrite_rules' ), 1 );
         add_action( 'query_vars', array( $this, '_query_vars' ) );
         add_action( 'template_redirect', array( $this, '_redirect' ) );
         add_filter( 'intermediate_image_sizes_advanced', array( $this, '_image_sizes' ) );
-        add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_scripts' ), 500 );
 
+        add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_scripts' ), 500 );
         add_action( 'wp_default_scripts', array( $this, '_default_scripts' ), 15 );
 
         // Disable Script Printing.
@@ -147,9 +140,6 @@ namespace UsabilityDynamics\Theme {
         add_action( 'wp_print_footer_scripts', array( $this, '_print_scripts' ), 5 );
         add_action( 'admin_print_scripts', array( $this, '_print_scripts' ), 5 );
         add_action( 'admin_print_footer_scripts', array( $this, '_print_scripts' ), 5 );
-
-        add_filter( 'udx:theme:public:model:locale', array( $this, 'locale_model' ) );
-        add_filter( 'udx:theme:public:model:config', array( $this, 'config_model' ) );
 
         add_action( 'widgets_init', array( $this, '_widgets' ), 100 );
         add_filter( 'post_class', array( $this, '_post_class' ), 100, 4 );
@@ -166,37 +156,6 @@ namespace UsabilityDynamics\Theme {
 
         $this->_upgrade();
 
-      }
-
-      /**
-       * Get Script Locale
-       *
-       * @author Usability Dynamics
-       * @since 0.1.0
-       */
-      public function locale_model() {
-
-      }
-
-      /**
-       * Get Site Configuration
-       *
-       * @author Usability Dynamics
-       * @since 0.1.0
-       */
-      public function config_model() {
-
-        return array(
-          'settings' => array(
-            'permalinks' => get_option( 'permalink_structure' ) == '' ? false : true,
-          ),
-          'url'      => array(
-            'domain' => trim( $_home_url[ 'host' ] ? $_home_url[ 'host' ] : array_shift( explode( '/', $_home_url[ 'path' ], 2 ) ) ),
-            'ajax'   => admin_url( 'admin-ajax.php' ),
-            'home'   => admin_url( 'admin-ajax.php' ),
-            'assets' => admin_url( 'admin-ajax.php' ),
-          )
-        );
       }
 
       /**
@@ -395,7 +354,7 @@ namespace UsabilityDynamics\Theme {
        *
        */
       public function _use_head_scripts() {
-        return false;
+        return true;
       }
 
       /**
@@ -406,88 +365,27 @@ namespace UsabilityDynamics\Theme {
        *
        */
       public function _use_footer_scripts() {
-        return false;
+        return true;
       }
 
       /**
        *
+       * <script type="text/javascript" src="_.pagespeed.jo.tXBSxcB8mn.js"></script>
        */
       public function _print_scripts() {
         global $wp_scripts;
 
-        // <script type="text/javascript" src="_.pagespeed.jo.tXBSxcB8mn.js"></script>
-
         // Header Scripts.
-        if( current_filter() === 'wp_print_scripts' ) {
-          echo '<script type="text/javascript" pagespeed_no_defer="" data-main="/assets/app.config" data-version="3.00" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
+        if( !is_admin() && current_filter() === 'wp_print_scripts' ) {
+          echo '<script type="text/javascript" pagespeed_no_defer="" data-main="/assets/app.config" data-version="' . $this->get( 'version' )  . '" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
         }
-
-        return;
 
         // Footer Scripts.
-        if( current_filter() === 'wp_print_footer_scripts' ) {
-          //die( '<pre>registered: ' . print_r( $wp_scripts->registered, true ) . '</pre>' );
-          //die( '<pre>queue: ' . print_r( $wp_scripts->queue, true ) . '</pre>' );
-          //die( '<pre>in_footer: ' . print_r( $wp_scripts->in_footer, true ) . '</pre>' );
-          //die( '<pre>to_do: ' . print_r( $wp_scripts->to_do, true ) . '</pre>' );
-          //die( '<pre>done: ' . print_r( $wp_scripts->done, true ) . '</pre>' );
-        }
+        if( current_filter() === 'wp_print_footer_scripts' ) {}
 
-        if( current_filter() === 'admin_print_scripts' ) {
+        if( current_filter() === 'admin_print_scripts' ) {}
 
-        }
-
-        if( current_filter() === 'admin_print_footer_scripts' ) {
-
-        }
-
-        //die( '<pre>' . print_r( $wp_scripts, true ) . '</pre>' );
-
-
-        // die(json_encode($wp_scripts));
-        // die( '<pre>' . print_r( $wp_scripts->registered, true ) . '</pre>' );
-
-        $_config = array(
-          'paths' => array(),
-          'shim'  => array(),
-          'deps'  => array()
-        );
-
-        // Dequeue All Third Party Scripts.
-        foreach( (array) $wp_scripts->in_footer as $script ) {
-          echo "\n<!-- removing in_footer: $script -->";
-          //$_config[ 'deps' ][ ] = $wp_scripts->registered[ $script ]->src;
-          wp_dequeue_script( $script );
-        }
-
-        foreach( (array) $wp_scripts->queue as $script ) {
-
-          if( $script !== 'app.require' ) {
-
-            if( isset( $wp_scripts->registered[ $script ]->deps ) && $wp_scripts->registered[ $script ]->deps ) {
-
-              foreach( (array) $wp_scripts->registered[ $script ]->deps as $_dep ) {
-                $_config[ 'deps' ][ ] = $wp_scripts->registered[ $_dep ]->src;
-              }
-
-            }
-
-            $_config[ 'deps' ][ ] = $wp_scripts->registered[ $script ]->src;
-
-            echo "\n<!-- removing queued: $script -->";
-
-          }
-
-          wp_dequeue_script( $script );
-
-        }
-
-        return;
-
-        // $_config[ 'deps' ] = $_config[ 'deps' ];
-        // $_config[ 'deps' ] = array_filter( array_unique( $_config[ 'deps' ] ) );
-
-        // echo "\n" . '<script id="require-amd-scripts" type="text/javascript">if( "function" === typeof require ) { require.config(' . json_encode( $_config ) . "); }</script>\n";
+        if( current_filter() === 'admin_print_footer_scripts' ) {}
 
       }
 
@@ -497,12 +395,6 @@ namespace UsabilityDynamics\Theme {
        */
       public function _enqueue_scripts() {
         global $wp_scripts;
-
-        //die(json_encode($wp_scripts))
-        //die( '<pre>' . print_r( $wp_scripts, true ) . '</pre>' );
-        //wp_enqueue_script( 'app.require' );
-
-        // die( '<pre>' . print_r( $this->get( '_scripts' ), true ) . '</pre>' );
 
         // Enqueue All AMD Scripts
         foreach( (array) $this->get( '_scripts' ) as $_name => $settings ) {
