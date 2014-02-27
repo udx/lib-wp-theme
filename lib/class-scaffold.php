@@ -1089,7 +1089,7 @@ namespace UsabilityDynamics\Theme {
         // Define New Rules.
         $new_rules = array(
           '^assets/styles/([^/]+)(.css)/?'      => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
-          '^assets/fonts/([^/]+)/?'            => 'index.php?is_asset=1&asset_type=font&asset_slug=$matches[1]',
+          '^assets/styles/fonts/([^/]+)(.woff|.ttf|.svg|.eot)/?'            => 'index.php?is_asset=1&asset_type=font&asset_slug=$matches[1]',
           '^assets/images/([^/]+)/?'           => 'index.php?is_asset=1&asset_type=image&asset_slug=$matches[1]',
           '^assets/scripts/([^/]+)(.js)/?'      => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
           '^assets/models/([^/]+)(.json|.js)/?' => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
@@ -1149,7 +1149,11 @@ namespace UsabilityDynamics\Theme {
 
         }
 
-        if( is_file( $_path = trailingslashit( get_stylesheet_directory() ) . trailingslashit( isset( $_path ) ? $_path : '' ) . get_query_var( 'asset_slug' ) ) ) {
+        $url_components = parse_url($_SERVER['REQUEST_URI']);
+
+        $_pathinfo = pathinfo( $url_components['path'] );
+
+        if( is_file( $_path = trailingslashit( get_stylesheet_directory() ) . trailingslashit( isset( $_path ) ? $_path : '' ) . get_query_var( 'asset_slug' ). '.'. $_pathinfo['extension'] ) ) {
           $_data = file_get_contents( $_path );
         };
 
@@ -1165,7 +1169,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'font' ) {
-          $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
+          $this->_serve_public( 'font', get_query_var( 'asset_slug' ), $_data );
         }
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'image' ) {
