@@ -1090,9 +1090,9 @@ namespace UsabilityDynamics\Theme {
         // Define New Rules.
         $new_rules = array(
           '^assets/styles/fonts/([^/]+)(.woff|.ttf|.svg|.eot)/?' => 'index.php?is_asset=1&asset_type=font&asset_slug=$matches[1]',
-          '^assets/styles/([^/]+)(.css)/?'                       => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
+          '^assets/styles/([^/]+)/?'                             => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
           '^assets/images/([^/]+)/?'                             => 'index.php?is_asset=1&asset_type=image&asset_slug=$matches[1]',
-          '^assets/scripts/([^/]+)(.js)/?'                       => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
+          '^assets/scripts/([^/]+)/?'                            => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
           '^assets/models/([^/]+)(.json|.js)/?'                  => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
         );
 
@@ -1150,8 +1150,8 @@ namespace UsabilityDynamics\Theme {
 
         }
 
-        // Compute Extension if one is needed. Commented doesn't work if file name contains dots
-        $_extension = /**pathinfo( get_query_var( 'asset_slug' ), PATHINFO_EXTENSION ) ? '' :**/ '.' . pathinfo( parse_url( $_SERVER[ 'REQUEST_URI' ], PHP_URL_PATH ), PATHINFO_EXTENSION );
+        // Compute Extension if one is needed.
+        $_extension = pathinfo( get_query_var( 'asset_slug' ), PATHINFO_EXTENSION ) ? '' : '.' . pathinfo( parse_url( $_SERVER[ 'REQUEST_URI' ], PHP_URL_PATH ), PATHINFO_EXTENSION );
 
         if( is_file( $_path = trailingslashit( get_stylesheet_directory() ) . trailingslashit( isset( $_path ) ? $_path : '' ) . get_query_var( 'asset_slug' )  . $_extension ) ) {
           $_data = file_get_contents( $_path );
