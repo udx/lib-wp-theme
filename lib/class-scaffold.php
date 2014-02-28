@@ -1150,12 +1150,12 @@ namespace UsabilityDynamics\Theme {
 
         }
 
-        // Compute Extension if one is needed.
-        $_extension = pathinfo( get_query_var( 'asset_slug' ), PATHINFO_EXTENSION ) ? '' : '.' . pathinfo( parse_url( $_SERVER[ 'REQUEST_URI' ], PHP_URL_PATH ), PATHINFO_EXTENSION );
+        // Compute Extension if one is needed. Commented doesn't work if file name contains dots
+        $_extension = /**pathinfo( get_query_var( 'asset_slug' ), PATHINFO_EXTENSION ) ? '' :**/ '.' . pathinfo( parse_url( $_SERVER[ 'REQUEST_URI' ], PHP_URL_PATH ), PATHINFO_EXTENSION );
 
         if( is_file( $_path = trailingslashit( get_stylesheet_directory() ) . trailingslashit( isset( $_path ) ? $_path : '' ) . get_query_var( 'asset_slug' )  . $_extension ) ) {
           $_data = file_get_contents( $_path );
-        };
+        }
 
         // Data Filter.
         $_data = apply_filters( 'udx:theme:public:' . get_query_var( 'asset_type' ) . ':' . get_query_var( 'asset_slug' ), isset( $_data ) ? $_data : null, get_query_var( 'asset_slug' ) );
