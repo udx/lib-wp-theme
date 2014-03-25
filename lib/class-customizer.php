@@ -7,6 +7,7 @@
  * @namespace UsabilityDynamics
  * @module Theme
  * @author potanin@UD
+ * @author peshkov@UD
  */
 namespace UsabilityDynamics\Theme {
 
@@ -18,8 +19,353 @@ namespace UsabilityDynamics\Theme {
      * @class Customizer
      * @author potanin@UD
      */
-    class Customizer {
+    abstract class Customizer {
 
+      public $query_vars = array(
+        'theme_custom_asset'
+      );
+      
+      public $plugin_dir = NULL;
+      
+      public $plugin_url = NULL;
+      
+      public $args = array();
+      
+      public $settings = array();
+      
+      /**
+       * Inits all neccessary hooks
+       *
+       * Note: must be called in child class, it it has constructor too
+       */
+      public function __construct( $args = array() ) {
+        
+        $this->args = wp_parse_args( $args, array(
+          'version' => '1.0',
+          'permalink' => 'assets/themecustomizer.css',
+          'exclude' => array(), // extra sections which will be removed from Customizer
+          'sections' => array(),
+          'settings' => array(),
+        ) );
+        
+        //** Prepare settings */
+        $settings = array();
+        foreach( (array)$this->args[ 'settings' ] as $setting ) {
+          if( $setting = $this->prepare_setting( $setting ) ) {
+            $settings[ $setting[ 'key' ] ] = $setting;
+          }
+        }
+        $this->args[ 'settings' ] = $settings;
+        
+        $this->plugin_dir = plugin_dir_path( dirname( dirname( __FILE__ ) ) );
+        $this->plugin_url = plugin_dir_url( dirname( dirname( __FILE__ ) ) );
+        
+        //** rewrite and respond */
+        add_action( 'query_vars', array( &$this, 'query_vars' ) );
+        add_filter( 'pre_update_option_rewrite_rules', array( &$this, 'update_option_rewrite_rules' ), 1 );
+        add_filter( 'template_include', array( &$this, 'return_asset' ), 1, 1 );
+        add_action( 'wp_enqueue_scripts', array( &$this, 'register_asset' ), 100 );
+        //** Customizer addons */
+        add_action( 'customize_register', array( &$this, 'register' ), 100 );
+        add_action( 'customize_preview_init', array( &$this, 'admin_scripts' ), 100 );
+      }
+      
+      /**
+       * New query vars
+       *
+       * @param type $query_vars
+       * @return string
+       */
+      public function query_vars( $query_vars ) {
+        return array_unique( array_merge( $query_vars, $this->query_vars ) );
+      }
+      
+      /**
+       * Dynamic Rules
+       *
+       * @param type $current
+       * @return type
+       */
+      public function update_option_rewrite_rules( $rules ) {   
+        return array_unique( array(
+          '^' . $this->get( 'permalink' ) => 'index.php?' . $this->query_vars[0] . '=1',
+        ) + (array)$rules );
+      }
+      
+      /**
+       * Registers asset with all selected dependencies
+       *
+       */
+      public function register_asset() {
+        $url = $this->get_asset_url();
+        wp_enqueue_style( 'lib-wp-theme-asset', $url, array(), $this->get( 'version' ) );
+      }
+      
+      /**
+       *
+       * @global type $wp_query
+       * @param type $template
+       * @return type
+       */
+      public function return_asset( $template ) {
+        global $wp_query;
+        
+        if ( get_query_var( $this->query_vars[0] ) ) {
+          $headers = apply_filters( 'lib-wp-theme::customizer::headers', array(
+            'Content-Type'    => ( 'text/css; charset=' . get_bloginfo( 'charset' ) ),
+            'Cache-Control'   => 'public',
+            'Pragma'          => 'cache',
+            'X-Frame-Options' => 'SAMEORIGIN',
+            'Vary'            => 'Accept-Encoding'
+          ) );
+          foreach( (array) $headers as $_key => $field_value ) {
+            @header( "{$_key}: {$field_value}" );
+          }
+          $data = $this->get_asset_data();
+          if ( !empty( $data ) ) {
+            die( $data );
+          } else {
+            die('/** Global asset is empty */');
+          }
+        }
+        return $template;
+      }
+      
+      /**
+       * Return styles
+       */
+      public function get_asset_data() {
+        $data = array();
+        foreach( (array)$this->get( 'settings' ) as $setting ) {
+          if( !empty( $setting[ 'css' ] ) && $style = $this->generate_css( $setting[ 'css' ] ) ) {
+            $data[] = $style;
+          }
+        }
+        return implode( ' ', $data );
+      }
+      
+      /**
+       * Global JS URL
+       * @return bool|string
+       */
+      public function get_asset_url() {
+        global $wp_rewrite;
+        
+        $url = home_url() . '?' . $this->query_vars[0] . '=1';
+        switch( true ) {
+          case ( empty( $wp_rewrite->permalink_structure ) ):
+            // Do nothing.
+            break;
+          case ( !key_exists( '^' . $this->get( 'permalink' ), $wp_rewrite->rules ) || strpos( $wp_rewrite->rules[ '^' . $this->get( 'permalink' ) ], $this->query_vars[0] ) === false ):
+            // Looks like permalink structure is set, but our rules are not.
+            // Flush rewrite rules to have correct permalink next time.
+            flush_rewrite_rules( );
+            break;
+          default:
+            $url = home_url( $this->get( 'permalink' ) );
+            break;
+        }
+        
+        return $url;
+      }
+      
+      /**
+       * This hooks into 'customize_register' (available as of WP 3.4) and allows
+       * you to add new sections and controls to the Theme Customize screen.
+       *
+       * Note: MUST BE REWTITTEN BY CHILD CLASS
+       *
+       * @see add_action('customize_register',$func)
+       * @param \WP_Customize_Manager $wp_customize
+       * @link http://ottopress.com/2012/how-to-leverage-the-theme-customizer-in-your-own-themes/
+       */
+      public function register( $wp_customize ) {
+        //** Remove extra sections */
+        foreach( (array)$this->get( 'exclude' ) as $i ) {
+          $wp_customize->remove_section( (string)$i );
+        }
+        //** Remove extra sections */
+        foreach( (array)$this->get( 'settings' ) as $i => $v ) {
+          $this->register_instance( $wp_customize, $v );
+        }
+        return $wp_customize;
+      }
+      
+      /**
+       * Try to register setting, its section and control.
+       *
+       */
+      public function register_instance( $wp_customize, $i ) {
+        
+        //** Add Section if it has not been added yet. */
+        $sections = $this->get( 'sections' );
+        if( !$wp_customize->get_section( $section ) ) {
+          $section = wp_parse_args( $sections[ $i[ 'section' ] ], array(
+            'title' => __( 'No Name' ),
+            'priority' => 100,
+          ) );
+          $wp_customize->add_section( $i[ 'section' ], $section );
+        }
+        
+        //** Add Setting */
+        $wp_customize->add_setting( $i[ 'key' ], array(
+          'capability' => 'edit_theme_options',
+          'transport'  => 'postMessage',
+        ) );
+        
+        //** Add Control */
+        $control_args = array(
+          'label'    => ( !empty( $i[ 'label' ] ) ? $i[ 'label' ] : $i[ 'key' ] ),
+          'section'  => $i[ 'section' ],
+          'settings' => $i[ 'key' ],
+        );
+        switch ( $i[ 'control' ] ) {
+          case 'image':
+            $wp_customize->add_control( new \WP_Customize_Image_Control( $wp_customize, $i[ 'key' ], $control_args ) );
+            break;
+          case 'color':
+          case 'bg_color':
+            $wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, $i[ 'key' ], $control_args ) );
+            break;
+          default:
+            //** Custom Control must be added using the hook below. */
+            do_action( "lib-wp-theme::customizer::control::{$i[ 'control' ]}",  $i );
+            break;
+        }
+        
+      }
+      
+      /**
+       * This outputs the javascript needed to automate the live settings preview.
+       * Also keep in mind that this function isn't necessary unless your settings
+       * are using 'transport'=>'postMessage' instead of the default 'transport'
+       * => 'refresh'
+       *
+       * Used by hook: 'customize_preview_init'
+       * @see add_action('customize_preview_init',$func)
+       */
+      public function admin_scripts() {
+        if ( !wp_script_is( 'lib-wp-theme-customizer', 'enqueued' ) ) {
+          wp_enqueue_script( 'lib-wp-theme-customizer', $this->plugin_url . 'scripts/udx.wp.customizer.js', array( 'jquery', 'customize-preview' ), $this->get( 'version' ), true );
+          wp_localize_script( 'lib-wp-theme-customizer', '_lib_wp_theme_customizer', array(
+            'settings' => $this->get( 'settings' ),
+          ) );
+        }
+      }
+      
+      /**
+       * Returns required argument
+       */
+      public function get( $arg ) {
+        return isset( $this->args[ $arg ] ) ? $this->args[ $arg ] : NULL;
+      }
+      
+      /**
+       * Prepares setting
+       */
+      public function prepare_setting( $i ) {
+        
+        $i = wp_parse_args( $i, array(
+          'key' => false, 
+          'label' => false,
+          'section' => false,
+          'control' => false, // values: 'color', 'image'
+          'selector' => false,
+        ) );
+        
+        try {
+        
+          $sections = $this->get( 'sections' );
+          if( !$i[ 'section' ] || !key_exists( $i[ 'section' ], $sections ) ) {
+            throw new \Exception( "Name of section {$i[ 'section' ]} is undefined." );
+          }
+          
+          if( empty( $i[ 'key' ] ) ) {
+            throw new \Exception( "Key of setting is undefined." );
+          }
+          
+          if( empty( $i[ 'control' ] ) ) {
+            throw new \Exception( "Control for Setting is undefined." );
+          }
+          
+          if( empty( $i[ 'selector' ] ) ) {
+            throw new \Exception( "Selector is undefined." );
+          }
+          
+          //** Add CSS rules */
+          $css = array(
+            'mod_name' => $i[ 'key' ],
+            'selector' => $i[ 'selector' ],
+            'style' => '',
+            'prefix' => '',
+            'postfix' => '',
+          );
+          switch( $i[ 'control' ] ) {
+            case 'image':
+              $css[ 'style' ] = 'background-image';
+              $css[ 'prefix' ] = 'url(';
+              $css[ 'postfix' ] = ')';
+              break;
+            case 'color':
+              $css[ 'style' ] = 'color';
+              break;
+            case 'bg_color':
+              $css[ 'style' ] = 'background-color';
+              break;
+            default:
+              //** Custom CSS rules must be added using the hook below. */
+              $css = apply_filters( "lib-wp-theme::customizer::css::{$i[ 'control' ]}", $css, $i );
+              break;
+          }
+          
+          if( empty( $css[ 'style' ] ) ) {
+            throw new \Exception( "CSS rules are incorrect. Check control '{$i[ 'control' ]}'" );
+          }
+          
+          $i[ 'css' ] = $css;
+        
+        } catch ( \Exception $e ) {
+          $i = false;
+          // Filter can be used for logs.
+          do_action( 'lib-wp-theme::customizer::error', 'Customizer Error: ' . $e->getMessage() . " Setting '{$i['label']} ( {$i['key']} )' can not be initialized." );
+        }
+        
+        return $i;
+      }
+      
+      /**
+       * This will generate a line of CSS for use in header output. If the setting
+       * ($mod_name) has no defined value, the CSS will not be output.
+       * 
+       * @uses get_theme_mod()
+       * @param string $selector CSS selector
+       * @param string $style The name of the CSS *property* to modify
+       * @param string $mod_name The name of the 'theme_mod' option to fetch
+       * @param string $prefix Optional. Anything that needs to be output before the CSS property
+       * @param string $postfix Optional. Anything that needs to be output after the CSS property
+       * @param bool $echo Optional. Whether to print directly to the page (default: true).
+       * @return string Returns a single line of CSS with selectors and a property.
+       */
+      public function generate_css( $args ) {
+        extract( wp_parse_args( $args, array(
+          'selector' => '',
+          'style' => '',
+          'mod_name' => '',
+          'prefix' => '',
+          'postfix' => '',
+        ) ) );
+        $return = '';
+        $mod = get_theme_mod( $mod_name );
+        if ( ! empty( $mod ) ) {
+           $return = sprintf('%s { %s:%s !important; }',
+              $selector,
+              $style,
+              $prefix.$mod.$postfix
+           );
+        }
+        return $return;
+      }
+    
     }
 
   }
