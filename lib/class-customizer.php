@@ -52,7 +52,7 @@ namespace UsabilityDynamics\Theme {
         $settings = array();
         foreach( (array)$this->args[ 'settings' ] as $setting ) {
           if( $setting = $this->prepare_setting( $setting ) ) {
-            $settings[ $setting[ 'key' ] ] = $setting;
+            $settings[] = $setting;
           }
         }
         $this->args[ 'settings' ] = $settings;
@@ -97,8 +97,23 @@ namespace UsabilityDynamics\Theme {
        *
        */
       public function register_asset() {
-        $url = $this->get_asset_url();
-        wp_enqueue_style( 'lib-wp-theme-asset', $url, array(), $this->get( 'version' ) );
+        if( isset( $_REQUEST[ 'customized' ] ) && isset( $_REQUEST[ 'wp_customize' ] ) && $_REQUEST[ 'wp_customize' ] == 'on' ) {
+          add_action( 'wp_head', array( $this, 'print_styles' ), 100 );
+        } else {
+          $url = $this->get_asset_url();
+          wp_enqueue_style( 'lib-wp-theme-asset', $url, array(), $this->get( 'version' ) );
+        }
+      }
+      
+      /**
+       * Print styles instead of registering asset when
+       * we're working on Customizer page for handling some javascript functionality.
+       */
+      public function print_styles() {
+        $data = $this->get_asset_data();
+        foreach( (array)$data as $k => $v ) {
+          echo "<style type=\"text/css\" id=\"lib_wp_theme_customizer_{$k}\">{$v}</style>";
+        }
       }
       
       /**
@@ -123,6 +138,7 @@ namespace UsabilityDynamics\Theme {
           }
           $data = $this->get_asset_data();
           if ( !empty( $data ) ) {
+            $data = is_array( $data ) ?  implode( ' ', $data ) : $data;
             die( $data );
           } else {
             die('/** Global asset is empty */');
@@ -138,10 +154,10 @@ namespace UsabilityDynamics\Theme {
         $data = array();
         foreach( (array)$this->get( 'settings' ) as $setting ) {
           if( !empty( $setting[ 'css' ] ) && $style = $this->generate_css( $setting[ 'css' ] ) ) {
-            $data[] = $style;
+            $data[ $setting[ 'key' ] ] = $style;
           }
         }
-        return implode( ' ', $data );
+        return $data;
       }
       
       /**

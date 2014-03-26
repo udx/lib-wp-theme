@@ -7,20 +7,18 @@
  
 ( function( $, args ) {
 
-  console.log( args );
-
   /**
    * Create Element for Hot Swapping Styles
    */
-  function createStyleContainer() {
+  function createStyleContainer( key ) {
     // console.log( 'createStyleContainer' );
-    if( $( '#lib_wp_theme_customizer' ).length ) {
+    if( $( '#lib_wp_theme_customizer_' + key ).length ) {
       return null;
     }
-    var _element = $( '<style type="text/css" id="lib_wp_theme_customizer"></style>' );
+    var _element = $( '<style type="text/css" id="lib_wp_theme_customizer_' + key + '"></style>' );
     // Create New Element and add to <head>
     $( 'head' ).append( _element );
-    // console.log( '_element', _element );
+    //console.log( '_element', _element );
   }
 
   /**
@@ -28,31 +26,37 @@
    *
    * @param style
    */
-  function updateStyles( style ) {
+  function updateStyles( c, style ) {
     // Oue dynamically generated style element
-    $( 'head #lib_wp_theme_customizer' ).text( style );
+    var v = '';
+    if( style && style.length > 0 ) {
+      var v = c.selector + '{ ' + c.style + ':' + c.prefix + style + c.postfix + ' !important; }';
+    }
+    $( 'head #lib_wp_theme_customizer_' + c.mod_name ).text( v );
+    
   }
   
-  
-  /*
   // Update Styles Live.
-  wp.customize( args.name, function( style ) {
-    var intent;
-    createStyleContainer();
+  $.each( args.settings, function( i, s ) {
     
-    // Listen for Changes.
-    style.bind( function ( style ) {
-      //console.log( 'stylesChanged', style );
-      // Clear Intent
-      window.clearTimeout( intent );
-      // Pause for Intent Check
-      intent = window.setTimeout( function() {
-        updateStyles( style );
-      }, 200 );
-    });
+    wp.customize( s.key, function( style ) {
+      var intent;
+      createStyleContainer( s.key );
+      
+      // Listen for Changes.
+      style.bind( function ( style ) {
+        //console.log( 'stylesChanged', s.key, style );
+        // Clear Intent
+        window.clearTimeout( intent );
+        // Pause for Intent Check
+        intent = window.setTimeout( function() {
+          updateStyles( s.css, style );
+        }, 200 );
+      });
 
-  });
-  //*/
+    });
+    
+  } );
 
 } )( jQuery, _lib_wp_theme_customizer );
 
