@@ -236,11 +236,11 @@ namespace UsabilityDynamics\Theme {
           'settings' => $i[ 'key' ],
         );
         switch ( $i[ 'control' ] ) {
-          case 'image':
+          case 'background-image':
             $wp_customize->add_control( new \WP_Customize_Image_Control( $wp_customize, $i[ 'key' ], $control_args ) );
             break;
           case 'color':
-          case 'bg_color':
+          case 'background-color':
           case 'border-color':
             $wp_customize->add_control( new \WP_Customize_Color_Control( $wp_customize, $i[ 'key' ], $control_args ) );
             break;
@@ -286,7 +286,7 @@ namespace UsabilityDynamics\Theme {
           'key' => false,
           'label' => false,
           'section' => false,
-          'control' => false, // values: 'color', 'image'
+          'control' => false, // values: 'background-image', 'color', 'background-color', 'border-color'
           'selector' => false,
         ) );
 
@@ -318,7 +318,7 @@ namespace UsabilityDynamics\Theme {
             'postfix' => '',
           );
           switch( $i[ 'control' ] ) {
-            case 'image':
+            case 'background-image':
               $css[ 'style' ] = 'background-image';
               $css[ 'prefix' ] = 'url(';
               $css[ 'postfix' ] = ')';
@@ -326,7 +326,7 @@ namespace UsabilityDynamics\Theme {
             case 'color':
               $css[ 'style' ] = 'color';
               break;
-            case 'bg_color':
+            case 'background-color':
               $css[ 'style' ] = 'background-color';
               break;
             case 'border-color':
