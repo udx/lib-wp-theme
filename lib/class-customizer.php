@@ -56,6 +56,8 @@ namespace UsabilityDynamics\Theme {
           }
         }
         $this->args[ 'settings' ] = $settings;
+        
+        //echo "<pre>"; print_r( $this->args[ 'settings' ] ); echo "</pre>"; die();
 
         $this->plugin_dir = plugin_dir_path( dirname( dirname( __FILE__ ) ) );
         $this->plugin_url = plugin_dir_url( dirname( dirname( __FILE__ ) ) );
@@ -153,7 +155,7 @@ namespace UsabilityDynamics\Theme {
       public function get_asset_data() {
         $data = array();
         foreach( (array)$this->get( 'settings' ) as $setting ) {
-          if( !empty( $setting[ 'css' ] ) && $style = $this->generate_css( $setting[ 'css' ] ) ) {
+          if( !empty( $setting[ 'css' ] ) && $setting[ 'css' ][ 'style' ] && $style = $this->generate_css( $setting[ 'css' ] ) ) {
             $data[ $setting[ 'key' ] ] = $style;
           }
         }
@@ -236,6 +238,7 @@ namespace UsabilityDynamics\Theme {
           'settings' => $i[ 'key' ],
         );
         switch ( $i[ 'control' ] ) {
+          case 'image':
           case 'background-image':
             $wp_customize->add_control( new \WP_Customize_Image_Control( $wp_customize, $i[ 'key' ], $control_args ) );
             break;
@@ -286,7 +289,7 @@ namespace UsabilityDynamics\Theme {
           'key' => false,
           'label' => false,
           'section' => false,
-          'control' => false, // values: 'background-image', 'color', 'background-color', 'border-color'
+          'control' => false, // values: 'background-image', 'color', 'background-color', 'border-color', 'image'
           'selector' => false,
         ) );
 
@@ -313,11 +316,15 @@ namespace UsabilityDynamics\Theme {
           $css = array(
             'mod_name' => $i[ 'key' ],
             'selector' => $i[ 'selector' ],
-            'style' => '',
+            'style' => false,
             'prefix' => '',
             'postfix' => '',
+            'type' => 'style', // style, image
           );
           switch( $i[ 'control' ] ) {
+            case 'image':
+              $css[ 'type' ] = 'image';
+              break;
             case 'background-image':
               $css[ 'style' ] = 'background-image';
               $css[ 'prefix' ] = 'url(';
@@ -335,11 +342,10 @@ namespace UsabilityDynamics\Theme {
             default:
               //** Custom CSS rules must be added using the hook below. */
               $css = apply_filters( "lib-wp-theme::customizer::css::{$i[ 'control' ]}", $css, $i );
+              if( empty( $css[ 'style' ] ) ) {
+                throw new \Exception( "CSS rules are incorrect. Check control '{$i[ 'control' ]}'" );
+              }
               break;
-          }
-
-          if( empty( $css[ 'style' ] ) ) {
-            throw new \Exception( "CSS rules are incorrect. Check control '{$i[ 'control' ]}'" );
           }
 
           $i[ 'css' ] = $css;

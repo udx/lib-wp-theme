@@ -36,25 +36,52 @@
     
   }
   
+  /**
+   * Update Image
+   *
+   * @param style
+   */
+  function updateImage( c, src ) {
+    // Oue dynamically generated style element
+    if( src && src.length > 0 && $( c.selector ).length > 0 ) {
+      $( c.selector ).attr( 'src', src );
+    }
+  }
+  
   // Update Styles Live.
   $.each( args.settings, function( i, s ) {
+    //console.log( s );
     
-    wp.customize( s.key, function( style ) {
-      var intent;
-      createStyleContainer( s.key );
-      
-      // Listen for Changes.
-      style.bind( function ( style ) {
-        //console.log( 'stylesChanged', s.key, style );
-        // Clear Intent
-        window.clearTimeout( intent );
-        // Pause for Intent Check
-        intent = window.setTimeout( function() {
-          updateStyles( s.css, style );
-        }, 200 );
-      });
-
-    });
+    switch( s.control ) {
+    
+      case 'image':
+        wp.customize( s.key, function( src ) {
+          // Listen for Changes.
+          src.bind( function ( src ) {
+            //console.log( 'imageChanged', s.key, src );
+            updateImage( s.css, src );
+          });
+        });
+        break;
+        
+      default:
+        wp.customize( s.key, function( style ) {
+          var intent;
+          createStyleContainer( s.key );
+          // Listen for Changes.
+          style.bind( function ( style ) {
+            //console.log( 'stylesChanged', s.key, style );
+            // Clear Intent
+            window.clearTimeout( intent );
+            // Pause for Intent Check
+            intent = window.setTimeout( function() {
+              updateStyles( s.css, style );
+            }, 200 );
+          });
+        });
+        break;
+    
+    }
     
   } );
 
