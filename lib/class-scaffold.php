@@ -1376,6 +1376,32 @@ namespace UsabilityDynamics\Theme {
 
         return $template;
       }
+      
+      /**
+       * Returns schema for theme structure.
+       * Contains: post types, meta, taxonomies.
+       *
+       * @author peshkov@UD
+       */
+      public function get_schema_structure( $path = '/static/schemas/schema.structure.json' ) {
+        if( file_exists( $file = get_stylesheet_directory() . $path ) ) {
+          return (array)\UsabilityDynamics\Utility::l10n_localize( json_decode( file_get_contents( $file ), true ) );
+        }
+        return array();
+      }
+      
+      /**
+       * Determine if called method is stored in Utility class.
+       * Allows to call \UsabilityDynamics\Festival\Utility methods directly.
+       *
+       * @author peshkov@UD
+       */
+      public function __call( $name , $arguments ) {
+        if( !is_callable( '\UsabilityDynamics\Festival\Utility', $name ) ) {
+          die( "Method $name is not found." );
+        }
+        return call_user_func_array( array( '\UsabilityDynamics\Festival\Utility', $name ), $arguments );
+      }
 
     }
 

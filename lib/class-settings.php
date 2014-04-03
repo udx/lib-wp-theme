@@ -26,13 +26,9 @@ namespace UsabilityDynamics\Theme {
         )));
 
         // Prepare default data which is used for storing in DB.
-        if( !$_instance->get( 'configuration' ) ) {
+        if( !$d = $_instance->get() || empty( $d ) ) {
           $_instance->set( $_instance->_get_system_settings() );
         }
-
-        //** Always load structure to keep it updated */
-        $_instance->set( 'structure', false );
-        $_instance->set( $_instance->_get_system_structure() );
 
         if( !empty( $data ) ) {
           $_instance->set( $data );
@@ -55,20 +51,6 @@ namespace UsabilityDynamics\Theme {
 
         return array();
 
-      }
-
-      /**
-       *
-       * @param type $path
-       * @return type
-       */
-      private function _get_system_structure( $path = '/static/schemas/default.structure.json' ) {
-
-        if( file_exists( $file = get_stylesheet_directory() . $path ) ) {
-          return \UsabilityDynamics\Utility::l10n_localize( json_decode( file_get_contents( $file ), true ) );
-        }
-
-        return array();
       }
 
     }
