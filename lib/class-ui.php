@@ -11,11 +11,6 @@ namespace UsabilityDynamics\Theme {
   if( !class_exists( '\UsabilityDynamics\Theme\UI' ) ) {
 
     class UI extends \UsabilityDynamics\UI\Settings {
-      
-      /**
-       *
-       */
-      static $l10n = array();
     
       /**
        * Create Settings Instance
@@ -26,9 +21,9 @@ namespace UsabilityDynamics\Theme {
        */
       static function define( $settings, $args = false ) {
   
-        $args = Utility::parse_args( $args, array(
+        $args = wp_parse_args( $args, array(
           'schema' => null,
-          'path' => '/static/schemas/schema.settings.json',
+          'path' => '/static/schemas/schema.ui.json',
           'l10n' => array(),
         ) );
       
