@@ -52,7 +52,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @param $settings
        *
-       * @var string
+       * @var UsabilityDynamics\Theme\Settings object
        */
       public $settings;
 
@@ -103,6 +103,13 @@ namespace UsabilityDynamics\Theme {
             )
           )
         ) );
+        
+        // Set Theme UI
+        if( class_exists( '\UsabilityDynamics\Theme\UI' ) ) {
+          $this->ui = UI::define( $this->settings, array(
+            
+          ) );
+        }
 
         $options = (object) Utility::extend( $options, array(
           'domain'    => $this->domain,
@@ -224,19 +231,6 @@ namespace UsabilityDynamics\Theme {
         }
 
         return $classes;
-      }
-
-      /**
-       * Create Theme Settings Instance.
-       *
-       * @param array $args
-       * @param array $data
-       *
-       * @return mixed
-       */
-      public function settings( $args = array(), $data = array() ) {
-
-        return $this->settings;
       }
 
       /**
