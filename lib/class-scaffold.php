@@ -75,17 +75,18 @@ namespace UsabilityDynamics\Theme {
       public $requires;
 
       /**
-       *
+       * Initializes our theme
+       * 
        * @param array $options
        */
-      public function __construct( $options = array() ) {
+      public function initialize( $options = array() ) {
 
         if( !$this->id ) {
-          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::__construct', 'Theme ID not specified.', isset( $this->version ) ? $this->version : null );
+          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Theme ID not specified.', isset( $this->version ) ? $this->version : null );
         }
 
         if( did_action( 'widgets_init' ) ) {
-          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::__construct', 'Called too late - should be called before widgets_init hook.', $this->version );
+          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Called too late - should be called before widgets_init hook.', $this->version );
         }
 
         // Initialize Settings.
@@ -103,13 +104,6 @@ namespace UsabilityDynamics\Theme {
             )
           )
         ) );
-        
-        // Set Theme UI
-        if( class_exists( '\UsabilityDynamics\Theme\UI' ) ) {
-          $this->ui = UI::define( $this->settings, array(
-            
-          ) );
-        }
 
         $options = (object) Utility::extend( $options, array(
           'domain'    => $this->domain,
@@ -191,15 +185,6 @@ namespace UsabilityDynamics\Theme {
 
         $this->set( 'locations.modules', $_modules );
 
-      }
-
-      /**
-       * Initializes Theme.
-       *
-       * @param array $options
-       */
-      public function initialize( $options = array() ) {
-        self::__construct( $options );
       }
 
       /**
@@ -323,7 +308,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         if( did_action( 'widgets_init' ) && !current_filter( 'widgets_init' ) ) {
-          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::__construct', 'Called too late - should be called before widgets_init hook.', $this->version );
+          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Called too late - should be called before widgets_init hook.', $this->version );
         }
 
         foreach( is_array( $this->get( '_sidebars' ) ) ? $this->get( '_sidebars' ) : array() as $_key => $settings ) {
@@ -564,26 +549,6 @@ namespace UsabilityDynamics\Theme {
 
         echo implode( "\n", $output );
 
-      }
-
-      /**
-       * Declare Data Structure.
-       *
-       * @param array $options
-       *
-       * @return array|bool
-       */
-      public function structure( $options = array() ) {
-
-        $options = wp_parse_args( $options, array(
-          'types'      => array(), // Custom post types
-          'meta'       => array(), // Meta fields. The list of arrays. Every meta array is set of /RW_Meta_Box field attributes
-          'taxonomies' => array(), // Taxonomies
-        ) );
-
-        $this->structure = \UsabilityDynamics\Structure::define( $options );
-
-        return $this->structure;
       }
 
       /**
@@ -1372,14 +1337,14 @@ namespace UsabilityDynamics\Theme {
       }
       
       /**
-       * Returns schema for theme structure.
+       * Returns specific schema from file.
        * Contains: post types, meta, taxonomies.
        *
        * @author peshkov@UD
        */
-      public function get_schema_structure( $path = '/static/schemas/schema.structure.json' ) {
+      public function get_schema( $path = '/static/schemas/schema.structure.json', $l10n = array() ) {
         if( file_exists( $file = get_stylesheet_directory() . $path ) ) {
-          return (array)\UsabilityDynamics\Utility::l10n_localize( json_decode( file_get_contents( $file ), true ) );
+          return (array)\UsabilityDynamics\Utility::l10n_localize( json_decode( file_get_contents( $file ), true ), $l10n );
         }
         return array();
       }
