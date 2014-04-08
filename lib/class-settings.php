@@ -17,7 +17,7 @@ namespace UsabilityDynamics\Theme {
        *
        * @since 2.0.0
        */
-      static function define( $args = false, $data = false ) {
+      static function define( $args = false, $data = array() ) {
 
         // Instantiate Settings object
         $_instance = new Settings( Utility::parse_args( $args, array(
@@ -25,11 +25,9 @@ namespace UsabilityDynamics\Theme {
           "key"   => 'theme::' . ( wp_get_theme()->get( 'Name' ) ),
         )));
 
-        // Prepare default data which is used for storing in DB.
-        if( !$d = $_instance->get() || empty( $d ) ) {
-          $_instance->set( $_instance->_get_system_settings() );
-        }
-
+        // Merge with default data.
+        $data = \UsabilityDynamics\Utility::extend( self::get_system_settings(), $_instance->get(), (array)$data );
+        //echo "<pre>"; print_r( $data ); echo "</pre>";die();
         if( !empty( $data ) ) {
           $_instance->set( $data );
         }
@@ -43,7 +41,7 @@ namespace UsabilityDynamics\Theme {
        * Get default Settings from schema
        *
        */
-      private function _get_system_settings( $path = '/static/schemas/default.settings.json' ) {
+      static public function get_system_settings( $path = '/static/schemas/default.settings.json' ) {
 
         if( file_exists( $file = get_stylesheet_directory() . $path ) ) {
           return \UsabilityDynamics\Utility::l10n_localize( json_decode( file_get_contents( $file ), true ) );
