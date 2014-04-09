@@ -76,7 +76,7 @@ namespace UsabilityDynamics\Theme {
 
       /**
        * Initializes our theme
-       * 
+       *
        * @param array $options
        */
       public function initialize( $options = array() ) {
@@ -1335,7 +1335,7 @@ namespace UsabilityDynamics\Theme {
 
         return $template;
       }
-      
+
       /**
        * Returns specific schema from file.
        * Contains: post types, meta, taxonomies.
@@ -1347,19 +1347,6 @@ namespace UsabilityDynamics\Theme {
           return (array)\UsabilityDynamics\Utility::l10n_localize( json_decode( file_get_contents( $file ), true ), $l10n );
         }
         return array();
-      }
-      
-      /**
-       * Determine if called method is stored in Utility class.
-       * Allows to call \UsabilityDynamics\Festival\Utility methods directly.
-       *
-       * @author peshkov@UD
-       */
-      public function __call( $name , $arguments ) {
-        if( !is_callable( '\UsabilityDynamics\Festival\Utility', $name ) ) {
-          die( "Method $name is not found." );
-        }
-        return call_user_func_array( array( '\UsabilityDynamics\Festival\Utility', $name ), $arguments );
       }
 
     }
