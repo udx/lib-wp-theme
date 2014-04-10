@@ -436,17 +436,6 @@ namespace UsabilityDynamics\Theme {
       }
 
       /**
-       * Management Page / Interface.
-       *
-       * @param array $options
-       */
-      public function manage( $options = array() ) {
-
-        //$settings->set( 'pages.manage', add_dashboard_page( __( 'Manage', HDDP ), __( 'Manage', HDDP ), $hddp[ 'manage_options' ], 'hddp_manage', array( 'UsabilityDynamics\Disco', 'hddp_manage' ) ) );
-
-      }
-
-      /**
        * Configures API/RPC Methods.
        *
        * @param array $options

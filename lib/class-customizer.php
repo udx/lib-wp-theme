@@ -19,7 +19,7 @@ namespace UsabilityDynamics\Theme {
      * @class Customizer
      * @author potanin@UD
      */
-    abstract class Customizer {
+    class Customizer {
 
       public $query_vars = array(
         'theme_custom_asset'
