@@ -1045,7 +1045,7 @@ namespace UsabilityDynamics\Theme {
         );
 
         // Return concatenated rules.
-        return $new_rules + $rules;
+        return array_combine( (array) $new_rules, (array) $rules );
 
       }
 
