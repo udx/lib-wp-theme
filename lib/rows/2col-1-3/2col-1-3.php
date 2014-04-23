@@ -27,8 +27,8 @@ if (!class_exists('cfct_row_a_bcd')) {
 
 			$this->add_classes( array( 'row-c8-12-345678' ) );
 
-			$this->push_block( new __block_c8_12 );
-			$this->push_block( new __block_c8_345678 );
+			$this->push_block( new __block_c4_1 );
+			$this->push_block( new __block_c4_234 );
 
 			parent::__construct( $config );
 		}
