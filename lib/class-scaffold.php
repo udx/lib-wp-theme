@@ -117,7 +117,8 @@ namespace UsabilityDynamics\Theme {
         // Set Instance Settings.
         $this->set( '_initialize', $options );
 
-        $this->set( 'version', $this->version );
+        // Set for short-hand referencing.
+        $this->set( 'version', $options->version );
 
         $this->set( '_theme', array(
           'rootPath' => get_theme_root(),
