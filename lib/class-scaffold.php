@@ -82,11 +82,11 @@ namespace UsabilityDynamics\Theme {
       public function initialize( $options = array() ) {
 
         if( !$this->id ) {
-          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Theme ID not specified.', isset( $this->version ) ? $this->version : null );
+          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Theme ID not specified.', $this->get( 'version' ) ? $this->get( 'version' ) : null );
         }
 
         if( did_action( 'widgets_init' ) ) {
-          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Called too late - should be called before widgets_init hook.', $this->version );
+          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Called too late - should be called before widgets_init hook.', $this->get( 'version' ) );
         }
 
         $options = (object) Utility::extend( array(
@@ -153,6 +153,9 @@ namespace UsabilityDynamics\Theme {
           // die( json_encode( get_option( 'rewrite_rules' ) ) );
         }
 
+        // die( json_encode( get_option( 'rewrite_rules' ) ) );
+
+        //die( json_encode( get_option( 'rewrite_rules' ) ) );
         // Make theme available for translation
         if( is_dir( $options->languages ) ) {
           load_theme_textdomain( $this->domain, $options->languages );
@@ -242,7 +245,7 @@ namespace UsabilityDynamics\Theme {
           $settings = array(
             'name'    => $name,
             'url'     => '',
-            'version' => $this->version,
+            'version' => $this->get( 'version' ),
             'footer'  => true,
             'deps'    => array()
           );
@@ -256,7 +259,7 @@ namespace UsabilityDynamics\Theme {
             $settings = (object) Utility::extend( $settings, array(
               'name'    => $name,
               'url'     => $_settings,
-              'version' => $this->version,
+              'version' => $this->get( 'version' ),
               'deps'    => array(  ),
               'footer'  => true
             ));
@@ -310,7 +313,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         if( did_action( 'widgets_init' ) && !current_filter( 'widgets_init' ) ) {
-          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Called too late - should be called before widgets_init hook.', $this->version );
+          _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Called too late - should be called before widgets_init hook.', $this->get( 'version' ) );
         }
 
         foreach( is_array( $this->get( '_sidebars' ) ) ? $this->get( '_sidebars' ) : array() as $_key => $settings ) {
@@ -384,7 +387,7 @@ namespace UsabilityDynamics\Theme {
 
         // Enqueue All AMD Scripts
         foreach( (array) $this->get( '_scripts' ) as $_name => $settings ) {
-          wp_register_script( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->footer );
+          wp_register_script( $settings->name, $settings->url, $settings->deps, $settings->get( 'version' ), $settings->footer );
           wp_enqueue_script( $settings->name );
         }
 
@@ -402,7 +405,7 @@ namespace UsabilityDynamics\Theme {
           $settings = array(
             'name'    => $name,
             'url'     => '',
-            'version' => $this->version,
+            'version' => $this->get( 'version' ),
             'media'   => 'all',
             'deps'    => array()
           );
@@ -416,7 +419,7 @@ namespace UsabilityDynamics\Theme {
             $settings = (object) Utility::extend( $settings, array(
               'name'    => $name,
               'url'     => $_settings,
-              'version' => $this->version,
+              'version' => $this->get( 'version' ),
               'media'   => 'all',
               'deps'    => array()
             ) );
@@ -427,7 +430,7 @@ namespace UsabilityDynamics\Theme {
           $this->set( '_styles', array( $settings->name => $settings ) );
 
           // Register Style.
-          wp_register_style( $settings->name, $settings->url, $settings->deps, $settings->version, $settings->media );
+          wp_register_style( $settings->name, $settings->url, $settings->deps, $settings->get( 'version' ), $settings->media );
 
         }
 
@@ -1044,15 +1047,17 @@ namespace UsabilityDynamics\Theme {
 
         // Define New Rules.
         $new_rules = array(
-          '^assets/styles/fonts/([^/]+)(.woff|.ttf|.svg|.eot)/?' => 'index.php?is_asset=1&asset_type=font&asset_slug=$matches[1]',
-          '^assets/styles/([^/]+)/?'                             => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
-          '^assets/images/([^/]+)/?'                             => 'index.php?is_asset=1&asset_type=image&asset_slug=$matches[1]',
-          '^assets/scripts/([^/]+)/?'                            => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
-          '^assets/models/([^/]+)(.json|.js)/?'                  => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
+          'assets/styles/fonts/([^/]+)(.woff|.ttf|.svg|.eot)?$' => 'index.php?is_asset=1&asset_type=font&asset_slug=$matches[1]',
+          'assets/styles/([^/]+)?$'                             => 'index.php?is_asset=1&asset_type=style&asset_slug=$matches[1]',
+          'assets/images/([^/]+)?$'                             => 'index.php?is_asset=1&asset_type=image&asset_slug=$matches[1]',
+          'assets/scripts/([^/]+)?$'                            => 'index.php?is_asset=1&asset_type=script&asset_slug=$matches[1]',
+          'assets/models/([^/]+)(.json|.js)?'                  => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
         );
 
         // Return concatenated rules.
-        return array_merge( (array) $new_rules, (array) $rules );
+        $new = array_merge( (array) $new_rules, (array) $rules );
+
+        return $new;
 
       }
 
@@ -1075,6 +1080,11 @@ namespace UsabilityDynamics\Theme {
 
       /**
        * Handle Asset Redirection.
+       *
+       * Redirects asset/image requests back to the theme's static file directory without exposing the path to the theme to frontend.
+       *
+       * http://capitaldealsonline.loc/assets/scripts/app.main.js
+       *  -> /home/cdo/public_html/themes/wp-yukon/static/scripts/app.js
        *
        * @param $query_vars
        */
@@ -1139,11 +1149,10 @@ namespace UsabilityDynamics\Theme {
           $this->_serve_public( 'model', get_query_var( 'asset_slug' ), $_data );
         }
 
-        // Stop Request.
-        header( "Cache-Control: no-cache" );
-        header( "HTTP/1.0 404 Not Found" );
-
-        die();
+        // Stop Request. (willl break wp-amd);
+        // header( "Cache-Control: no-cache" );
+        // header( "HTTP/1.0 404 Not Found" );
+        // die();
 
       }
 
@@ -1192,11 +1201,7 @@ namespace UsabilityDynamics\Theme {
           @header( "{$_key}: {$field_value}" );
         }
 
-        // WordPress will try to make it 404.
-        // http_response_code( 200 );
-
         if( is_array( $data ) || is_object( $data ) ) {
-          //$data = 'define( "' . $name . '", ' . json_encode( $data ) . ');';
           $data = 'define(' . json_encode( $data ) . ');';
         }
 
@@ -1227,11 +1232,17 @@ namespace UsabilityDynamics\Theme {
        */
       private function _install() {
 
-        // Flush Rules.
-        flush_rewrite_rules();
+        if( !$this->get( 'version' ) ) {
+          return;
+        }
 
-        // Update installed verison.
-        update_option( $this->get( '_option_keys.version' ), $this->version );
+        // Update installed verison, flush if successful.
+        if( update_option( $this->get( '_option_keys.version' ), $this->get( 'version' ) ) ) {
+
+          // Flush Rules.
+          flush_rewrite_rules();
+
+        }
 
         // wp_die( 'installed' );
 
@@ -1252,13 +1263,12 @@ namespace UsabilityDynamics\Theme {
         }
 
         // Upgrade Needed.
-        if( version_compare( $this->version, $_installed, '>' ) ) {
+        if( version_compare( $this->get( 'version' ), $_installed, '>' ) ) {
 
-          // Flush Rules.
-          flush_rewrite_rules();
-
-          // Update installed verison.
-          update_option( $this->get( '_option_keys.version' ), $this->version );
+          // Update installed verison, and then flush.
+          if( update_option( $this->get( '_option_keys.version' ), $this->get( 'version' ) ) ) {
+            flush_rewrite_rules();
+          }
 
           // wp_die( 'upgrded' );
 
