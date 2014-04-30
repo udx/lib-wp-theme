@@ -19,7 +19,7 @@ namespace UsabilityDynamics\Theme {
      *
      * @author potanin@UD
      */
-    class Nav_Menu  {
+    class Nav_Menu extends \Walker_Nav_Menu {
 
     }
 
