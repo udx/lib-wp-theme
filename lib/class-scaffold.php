@@ -89,6 +89,11 @@ namespace UsabilityDynamics\Theme {
           _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Called too late - should be called before widgets_init hook.', $this->version );
         }
 
+        $options = (object) Utility::extend( array(
+          'domain'    => $this->domain,
+          'languages' => get_template_directory() . '/static/languages'
+        ), $options );
+
         // Initialize Settings.
         $this->settings = Settings::define( array(
           'id'      => $this->id,
@@ -99,18 +104,15 @@ namespace UsabilityDynamics\Theme {
               'modules' => array()
             ),
             '_option_keys' => array(
-              'version'  => $this->id . ':_version',
-              'settings' => $this->id . ':_settings',
+              'version'  => $options->id . '::version',
+              'settings' => $options->id . '::settings',
             )
           )
-        ) );
+        ));
 
-        $options = (object) Utility::extend( $options, array(
-          'domain'    => $this->domain,
-          'languages' => get_template_directory() . '/static/languages'
-        ) );
-
-        $this->modules( __DIR__ . '/modules' );
+        if( is_dir( __DIR__ . '/modules' ) ) {
+          $this->modules( __DIR__ . '/modules' );
+        }
 
         // Set Instance Settings.
         $this->set( '_initialize', $options );
@@ -126,7 +128,7 @@ namespace UsabilityDynamics\Theme {
         add_filter( 'admin_menu', array( $this, 'admin_menu' ) );
         add_filter( 'pre_update_option_rewrite_rules', array( $this, '_update_option_rewrite_rules' ), 1 );
         add_action( 'query_vars', array( $this, '_query_vars' ) );
-        add_action( 'template_redirect', array( $this, '_redirect' ) );
+        add_action( 'template_redirect', array( $this, '_redirect' ), 5 );
         add_filter( 'intermediate_image_sizes_advanced', array( $this, '_image_sizes' ) );
 
         add_action( 'wp_enqueue_scripts', array( $this, '_enqueue_scripts' ), 500 );
@@ -147,7 +149,7 @@ namespace UsabilityDynamics\Theme {
 
         // @example http://discodonniepresents.com/manage/?debug=debug_rewrite_rules
         if( @$_GET[ 'debug' ] === 'debug_rewrite_rules' ) {
-          die( json_encode( get_option( 'rewrite_rules' ) ) );
+          // die( json_encode( get_option( 'rewrite_rules' ) ) );
         }
 
         // Make theme available for translation
@@ -304,7 +306,6 @@ namespace UsabilityDynamics\Theme {
 
         if( is_file( __DIR__ . '/plugins/widget-conditions/widget-conditions.php' ) ) {
           include_once( __DIR__ . '/plugins/widget-conditions/widget-conditions.php' );
-
         }
 
         if( did_action( 'widgets_init' ) && !current_filter( 'widgets_init' ) ) {
@@ -354,8 +355,13 @@ namespace UsabilityDynamics\Theme {
       public function _print_scripts() {
         global $wp_scripts;
 
+        // Do nothing if script handling is not enabled.
+        if( !$this->get( 'scripts.print' ) ) {
+          return;
+        }
+
         // Header Scripts.
-        if( !is_admin() && current_filter() === 'wp_print_scripts' ) {
+        if( current_filter() === 'wp_print_scripts' ) {
           echo '<script type="text/javascript" pagespeed_no_defer="" data-main="/assets/scripts/app.config" data-version="' . $this->get( 'version' )  . '" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
         }
 
@@ -1045,7 +1051,7 @@ namespace UsabilityDynamics\Theme {
         );
 
         // Return concatenated rules.
-        return array_combine( (array) $new_rules, (array) $rules );
+        return array_merge( (array) $new_rules, (array) $rules );
 
       }
 
@@ -1074,26 +1080,26 @@ namespace UsabilityDynamics\Theme {
       public function _redirect( $query_vars ) {
         global $wp_query;
 
-        if( !get_query_var( 'is_asset' ) ) {
+        if( !$wp_query->get( 'is_asset' ) ) {
           return;
         }
 
         switch( get_query_var( 'asset_type' ) ) {
 
           case 'style':
-            $_path = 'styles';
+            $_path = apply_filters( 'udx:theme:asset:path', 'styles', 'style', $this );
           break;
 
           case 'font':
-            $_path = 'styles/fonts';
+            $_path = apply_filters( 'udx:theme:asset:path', 'styles/fonts', 'font', $this );
           break;
 
           case 'script':
-            $_path = 'scripts';
+            $_path = apply_filters( 'udx:theme:asset:path', 'scripts', 'script', $this );
           break;
 
           case 'image':
-            $_path = 'images';
+            $_path = apply_filters( 'udx:theme:asset:path', 'images', 'image', $this );
           break;
 
         }
@@ -1106,7 +1112,7 @@ namespace UsabilityDynamics\Theme {
         }
 
         // Data Filter.
-        $_data = apply_filters( 'udx:theme:public:' . get_query_var( 'asset_type' ) . ':' . get_query_var( 'asset_slug' ), isset( $_data ) ? $_data : null, get_query_var( 'asset_slug' ) );
+        $_data = apply_filters( 'udx:theme: :' . get_query_var( 'asset_type' ) . ':' . get_query_var( 'asset_slug' ), isset( $_data ) ? $_data : null, get_query_var( 'asset_slug' ) );
 
         // Set to bypass caching.
         $wp_query->is_attachment = true;
@@ -1132,9 +1138,11 @@ namespace UsabilityDynamics\Theme {
           $this->_serve_public( 'model', get_query_var( 'asset_slug' ), $_data );
         }
 
-        if( is_callable(( 'http_response_code' ) ) ) {
-          http_response_code( 404 );
-        }
+        // Stop Request.
+        header( "Cache-Control: no-cache" );
+        header( "HTTP/1.0 404 Not Found" );
+
+        die();
 
       }
 
