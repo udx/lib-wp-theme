@@ -303,14 +303,6 @@ namespace UsabilityDynamics\Theme {
        *
        */
       public function _widgets() {
-        //die( '<pre>' . print_r( $this->get( 'locations.modules' ), true ) . '</pre>' );
-
-        //$_modules = $this->get( 'locations.modules' );
-        //foreach( (array) $_modules as $path ) {}
-
-        if( is_file( __DIR__ . '/plugins/widget-conditions/widget-conditions.php' ) ) {
-          include_once( __DIR__ . '/plugins/widget-conditions/widget-conditions.php' );
-        }
 
         if( did_action( 'widgets_init' ) && !current_filter( 'widgets_init' ) ) {
           _doing_it_wrong( 'UsabilityDynamics\Theme\Scaffold::initialize', 'Called too late - should be called before widgets_init hook.', $this->get( 'version' ) );
