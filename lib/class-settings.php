@@ -26,8 +26,8 @@ namespace UsabilityDynamics\Theme {
         )));
 
         // Merge with default data.
-        $data = \UsabilityDynamics\Utility::extend( self::get_system_settings(), $_instance->get(), (array)$data );
-        //echo "<pre>"; print_r( $data ); echo "</pre>";die();
+        $data = \UsabilityDynamics\Utility::extend( self::get_system_settings(), $_instance->get(), (array) $data );
+
         if( !empty( $data ) ) {
           $_instance->set( $data );
         }
