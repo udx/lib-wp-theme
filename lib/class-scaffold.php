@@ -422,7 +422,7 @@ namespace UsabilityDynamics\Theme {
           $this->set( '_styles', array( $settings->name => $settings ) );
 
           // Register Style.
-          wp_register_style( $settings->name, $settings->url, $settings->deps, $settings->get( 'version' ), $settings->media );
+          wp_register_style( $settings->name, $settings->url, $settings->deps, method_exists( $this, 'get' ) ? $this->get( 'version' ) : '', $settings->media );
 
         }
 
