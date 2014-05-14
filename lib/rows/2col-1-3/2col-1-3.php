@@ -1,5 +1,4 @@
 <?php
-
 /**
  * 2 Column Row, Column 2 is 3 times wider than 1
  *
@@ -28,8 +27,8 @@ if (!class_exists('cfct_row_a_bcd')) {
 
 			$this->add_classes( array( 'row-c8-12-345678' ) );
 
-			$this->push_block( new __block_c8_12 );
-			$this->push_block( new __block_c8_345678 );
+			$this->push_block( new __block_c4_1 );
+			$this->push_block( new __block_c4_234 );
 
 			parent::__construct( $config );
 		}
@@ -40,8 +39,8 @@ if (!class_exists('cfct_row_a_bcd')) {
 /**
   * 25% column
   */
-if ( !class_exists( '__block_c8_12' ) ) {
-  class __block_c8_12 extends cfct_block {
+if ( !class_exists( '__block_c4_1' ) ) {
+  class __block_c4_1 extends cfct_block {
     public function __construct( $classes = array() ) {
       $this->add_classes( array( 'c6-12', 'col-md-3', 'column' ) );
       parent::__construct( $classes );
@@ -52,8 +51,8 @@ if ( !class_exists( '__block_c8_12' ) ) {
 /**
   * 75% column
   */
-if ( !class_exists( '__block_c8_345678' ) ) {
-  class __block_c8_345678 extends cfct_block {
+if ( !class_exists( '__block_c4_234' ) ) {
+  class __block_c4_234 extends cfct_block {
     public function __construct( $classes = array() ) {
       $this->add_classes( array( 'c6-3456', 'col-md-9', 'column' ) );
       parent::__construct( $classes );
@@ -61,4 +60,3 @@ if ( !class_exists( '__block_c8_345678' ) ) {
   }
 }
 
-?>
