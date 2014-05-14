@@ -358,7 +358,7 @@ namespace UsabilityDynamics\Theme {
 
         // Header Scripts.
         if( current_filter() === 'wp_print_scripts' ) {
-          echo '<script type="text/javascript" pagespeed_no_defer="" data-main="/' . get_template_directory_uri() . '/scripts/app.config" data-version="' . $this->get( 'version' )  . '" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
+          echo '<script type="text/javascript" pagespeed_no_defer="" data-main="/assets/scripts/app.config" data-version="' . $this->get( 'version' )  . '" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
         }
 
         // Footer Scripts.
@@ -1115,7 +1115,9 @@ namespace UsabilityDynamics\Theme {
         }
 
         // Data Filter.
-        $_data = apply_filters( 'udx:theme: :' . get_query_var( 'asset_type' ) . ':' . get_query_var( 'asset_slug' ), isset( $_data ) ? $_data : null, get_query_var( 'asset_slug' ) );
+        if( get_query_var( 'asset_slug' ) ) {
+          $_data = apply_filters( 'udx:theme:asset:' . get_query_var( 'asset_type' ) . ':' . get_query_var( 'asset_slug' ), isset( $_data ) ? $_data : null, get_query_var( 'asset_slug' ) );
+        }
 
         // Set to bypass caching.
         $wp_query->is_attachment = true;
