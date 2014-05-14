@@ -356,7 +356,7 @@ namespace UsabilityDynamics\Theme {
 
         // Header Scripts.
         if( !is_admin() && current_filter() === 'wp_print_scripts' ) {
-          echo '<script type="text/javascript" pagespeed_no_defer="" data-main="/assets/scripts/app.config" data-version="' . $this->get( 'version' )  . '" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
+          echo '<script type="text/javascript" pagespeed_no_defer="" data-main="' . get_template_directory_uri() .  '/scripts/app.config" data-version="' . $this->get( 'version' )  . '" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
         }
 
         // Footer Scripts.
