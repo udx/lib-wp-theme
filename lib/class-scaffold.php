@@ -588,7 +588,7 @@ namespace UsabilityDynamics\Theme {
        */
       public function nav( $name = null, $location = null ) {
 
-        return wp_nav_menu( apply_filters( $name, array(
+        return wp_nav_menu( apply_filters( "udx:theme:nav_menu:{$name}", array(
           'theme_location' => is_string( $location ) ? $location : $name,
           'depth'          => is_numeric( $location ) ? $location : 2,
           'menu_class'     => implode( ' ', array_filter( array( $this->id . '-menu', 'nav', 'navbar-nav', $name, is_string( $location ) ? $location : '' ) ) ),
