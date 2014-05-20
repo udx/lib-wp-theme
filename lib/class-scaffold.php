@@ -355,9 +355,9 @@ namespace UsabilityDynamics\Theme {
         if( !$this->get( 'scripts.print' ) ) {
           return;
         }
-
-        // Header Scripts.
-        if( current_filter() === 'wp_print_scripts' ) {
+        
+        // Header Scripts. NOT LOAD REQUIREJS ON BACK END TO PREVENT THE CONFLICT WITH JETPACK
+        if( current_filter() === 'wp_print_scripts' && !is_admin() ) {
           /* _theme_app_config variable should contain only neccessary dynamic vars. */
           echo '<script type="text/javascript">var _theme_app_config = ' . json_encode( apply_filters( 'udx:theme:script:config', array() ) ) . '</script>';
           echo '<script type="text/javascript" pagespeed_no_defer="" data-main="/assets/scripts/app.config" data-version="' . $this->get( 'version' )  . '" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
