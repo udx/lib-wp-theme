@@ -358,6 +358,8 @@ namespace UsabilityDynamics\Theme {
 
         // Header Scripts.
         if( current_filter() === 'wp_print_scripts' ) {
+          /* _theme_app_config variable should contain only neccessary dynamic vars. */
+          echo '<script type="text/javascript">var _theme_app_config = ' . json_encode( apply_filters( 'udx:theme:script:config', array() ) ) . '</script>';
           echo '<script type="text/javascript" pagespeed_no_defer="" data-main="/assets/scripts/app.config" data-version="' . $this->get( 'version' )  . '" src="http://cdn.udx.io/udx.requires.js?ver=' . $this->get( 'version' ) . '"></script>' . "\n";
         }
 
@@ -922,6 +924,7 @@ namespace UsabilityDynamics\Theme {
               "multiple"    => true,
               "options"     => array(
                 'top' => __( "Primary (Top)" ),
+                'menufication' => __( "Menufication (Mobile)" ),
               ),
             ),
           )
