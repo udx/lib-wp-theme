@@ -636,6 +636,12 @@ namespace UsabilityDynamics\Theme {
         if( !isset( $_sections ) || !isset( $_sections[ $name ] ) ) {
           return null;
         }
+        
+        /* Determine if section has been disabled for the current page */
+        $disabled_sections = get_post_meta( $post->ID, 'disabledSections' );
+        if( in_array( $name, $disabled_sections ) ) {
+          return null;
+        }
 
         // Widget / Sidebar Area.
         if( isset( $_sections[ $name ][ 'sidebar' ] ) && is_active_sidebar( $name ) ) {
@@ -684,10 +690,10 @@ namespace UsabilityDynamics\Theme {
 
         $_asides = array();
 
-        foreach( $custom_loop as $post ) {
-          $_asides[ ] = self::aside( $post->ID, $args );
+        foreach( $custom_loop as $_post ) {
+          $_asides[ ] = self::aside( $_post->ID, $args );
         }
-
+        
         if( !empty( $_asides ) ) {
           $_requires = (!empty( $_sections[ $name ][ 'options' ] ) && !empty( $_sections[ $name ][ 'options' ][ 'requires' ] )) ? $_sections[ $name ][ 'options' ][ 'requires' ] : '';
           echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . $_requires . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
@@ -710,7 +716,7 @@ namespace UsabilityDynamics\Theme {
        * @return mixed|null
        */
       public function aside( $name = null, $args = array() ) {
-        //global $post;
+        global $post;
 
         $args = (object) wp_parse_args( $args, $default = array(
           'type'           => '_aside',
@@ -721,7 +727,7 @@ namespace UsabilityDynamics\Theme {
         ) );
 
         // Preserve Post.
-        //$_post = $post;
+        $_post = $post;
 
         // Using query_posts() will not work because we must not change the global query.
         $custom_loop = new \WP_Query( array_filter( array(
@@ -750,7 +756,7 @@ namespace UsabilityDynamics\Theme {
         $content = apply_filters( $this->id . ':aside', isset( $content ) ? '<aside class="' . $args->class . ' ' . $title . ' aside-' . $name . '" data-aside="' . $name . '">' . $content . '</aside>' : null, $name );
 
         // Return post.
-        //$post = $_post;
+        $post = $_post;
 
         if( $args->return ) {
           return $content;
@@ -861,7 +867,7 @@ namespace UsabilityDynamics\Theme {
           }
 
         }
-
+        
         // Store all defined Sections.
         $this->set( '_sections', $options );
 
@@ -886,7 +892,13 @@ namespace UsabilityDynamics\Theme {
               'meta' => array(
                 'general' => array( 'fields' => array( 'asideLocation' ) )
               )
-            )
+            ),
+            'page' => array(
+              'meta' => array(
+                'disabled_content' => array( 'fields' => array( 'disabledSections', 'disabledNavMenu' ) )
+              )
+              
+            ),
           ),
           'meta'  => array(
             'asideLocation' => array(
@@ -895,7 +907,23 @@ namespace UsabilityDynamics\Theme {
               "type"        => "checkbox_list",
               "multiple"    => true,
               "options"     => $_locations
-            )
+            ),
+            'disabledSections' => array(
+              "name"        => __( "Sections (Asides)" ),
+              "desc" => __( "Check section to remove it from the current page view." ),
+              "type"        => "checkbox_list",
+              "multiple"    => true,
+              "options"     => $_locations
+            ),
+            'disabledNavMenu' => array(
+              "name"        => __( "Navigation Menu" ),
+              "desc" => __( "Check menu to remove it from the current page view." ),
+              "type"        => "checkbox_list",
+              "multiple"    => true,
+              "options"     => array(
+                'top' => __( "Primary (Top)" ),
+              ),
+            ),
           )
         ) );
 
