@@ -355,7 +355,7 @@ namespace UsabilityDynamics\Theme {
         if( !$this->get( 'scripts.print' ) ) {
           return;
         }
-        
+
         // Header Scripts. NOT LOAD REQUIREJS ON BACK END TO PREVENT THE CONFLICT WITH JETPACK
         if( current_filter() === 'wp_print_scripts' && !is_admin() ) {
           /* _theme_app_config variable should contain only neccessary dynamic vars. */
@@ -553,20 +553,34 @@ namespace UsabilityDynamics\Theme {
 
         $post = get_post( $post_id, ARRAY_A, $filter );
 
-        if( $post && !is_wp_error( $post ) && key_exists( $post[ 'post_type' ], (array) $this->structure ) ) {
+        if( $post && !is_wp_error( $post ) ){
 
-          // Get meta data
-          foreach( (array) $this->structure[ $post[ 'post_type' ] ][ 'meta' ] as $key ) {
-            $post[ $key ] = get_post_meta( $post_id, $key, false );
-            if( is_array( $post[ $key ] ) ) {
-              if( count( $post[ $key ] ) == 1 ) {
-                $post[ $key ] = array_shift( $post[ $key ] );
-              } else if( empty( $post[ $key ] ) ) {
-                $post[ $key ] = '';
+          /** This is a legacy check against the schema, we should support both types, so go ahead and get structure */
+          $structure = (array) $this->structure;
+          if( isset( $structure[ 'post_types' ] ) && is_array( $structure[ 'post_types' ] ) && isset( $structure[ 'post_types' ][ $post[ 'post_type' ] ] ) ){
+            /** New format */
+            $structure = $structure[ 'post_types' ][ $post[ 'post_type' ] ];
+          }elseif( isset( $structure[ $post[ 'post_type' ] ] ) ){
+            /** Legacy format */
+            $structure = $structure[ $post[ 'post_type' ] ];
+          }else{
+            $structure = false;
+          }
+
+          /** Move on and get the data */
+          if( $structure ){
+            // Get meta data
+            foreach( (array) $structure[ 'meta' ] as $key ) {
+              $post[ $key ] = get_post_meta( $post_id, $key, false );
+              if( is_array( $post[ $key ] ) ) {
+                if( count( $post[ $key ] ) == 1 ) {
+                  $post[ $key ] = array_shift( $post[ $key ] );
+                } else if( empty( $post[ $key ] ) ) {
+                  $post[ $key ] = '';
+                }
               }
             }
           }
-
         }
 
         return $post;
@@ -638,7 +652,7 @@ namespace UsabilityDynamics\Theme {
         if( !isset( $_sections ) || !isset( $_sections[ $name ] ) ) {
           return null;
         }
-        
+
         /* Determine if section has been disabled for the current page */
         $disabled_sections = get_post_meta( $post->ID, 'disabledSections' );
         if( in_array( $name, $disabled_sections ) ) {
@@ -695,7 +709,7 @@ namespace UsabilityDynamics\Theme {
         foreach( $custom_loop as $_post ) {
           $_asides[ ] = self::aside( $_post->ID, $args );
         }
-        
+
         if( !empty( $_asides ) ) {
           $_requires = (!empty( $_sections[ $name ][ 'options' ] ) && !empty( $_sections[ $name ][ 'options' ][ 'requires' ] )) ? $_sections[ $name ][ 'options' ][ 'requires' ] : '';
           echo '<section class="section section-' . $name . '" data-section="' . $name . '" data-requires="' . $_requires . '"><div class="container">' . implode( '', $_asides ) . '</div></section>';
@@ -869,7 +883,7 @@ namespace UsabilityDynamics\Theme {
           }
 
         }
-        
+
         // Store all defined Sections.
         $this->set( '_sections', $options );
 
@@ -899,7 +913,7 @@ namespace UsabilityDynamics\Theme {
               'meta' => array(
                 'disabled_content' => array( 'fields' => array( 'disabledSections', 'disabledNavMenu' ) )
               )
-              
+
             ),
           ),
           'meta'  => array(
