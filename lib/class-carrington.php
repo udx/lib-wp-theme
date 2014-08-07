@@ -177,9 +177,11 @@ namespace UsabilityDynamics\Theme {
         add_filter( 'cfct-build-display-class', array( $this, 'cfct_build_display_class' ), 10, 4 );
         add_action( 'wp_ajax_flawless_cb_row_class', array( $this, '_cb_row_class' ) );
         add_action( 'cfct-row-admin-html', array( $this, '_row_admin_html' ) );
-        add_action( 'edit_form_after_editor', array( $this, 'edit_form_after_editor' ), 500 );
-        add_action( 'edit_form_top', array( $this, 'edit_form_top' ), 500 );
+
         add_action( 'admin_enqueue_scripts', array( $this, '_admin_enqueue_scripts' ), 500 );
+
+        //add_action( 'edit_form_after_editor', array( $this, 'edit_form_after_editor' ), 500 );
+        //add_action( 'edit_form_top', array( $this, 'edit_form_top' ), 500 );
 
         add_theme_support( 'carrington-build' );
 
