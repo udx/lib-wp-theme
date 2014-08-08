@@ -97,13 +97,38 @@ namespace UsabilityDynamics\Theme {
       /**
        * Registers asset with all selected dependencies
        *
+       * @param array $args The arguments
+       * 
+       * @arg array $deps Optional. The dependencies
+       * @arg bool $register Optional. Should we register the script? 
+       * @arg bool $enqueue Optional. Should we enqueue the script?
+       * @arg bool $force Optional. Force this, even if it's already enqueued/registered
+       *
        */
-      public function register_asset() {
+      public function register_asset( $args = array() ) {
+        extract( wp_parse_args( $args, array(
+          'deps' => array(),
+          'register' => true,
+          'enqueue' => true,
+          'force' => false
+        ) ) );
         if( isset( $_REQUEST[ 'customized' ] ) && isset( $_REQUEST[ 'wp_customize' ] ) && $_REQUEST[ 'wp_customize' ] == 'on' ) {
           add_action( 'wp_head', array( $this, 'print_styles' ), 100 );
         } else {
-          $url = $this->get_asset_url();
-          wp_enqueue_style( 'lib-wp-theme-asset', $url, array(), $this->get( 'version' ) );
+          if( ( $enqueue || $register ) && ( (bool) $force || !wp_style_is( 'lib-wp-theme-asset', 'registered' ) ) ){
+            /** Make sure we have good deps */
+            if( !is_array( $deps ) ){
+              $deps = array();
+            }
+            /** Ungegister the style */
+            wp_deregister_style( 'lib-wp-theme-asset' );
+            /** Reregister the style */
+            wp_register_style( 'lib-wp-theme-asset', $this->get_asset_url(), $deps, $this->get( 'version' ) );
+          }
+          if( $enqueue && ( (bool) $force || !wp_style_is( 'lib-wp-theme-asset', 'enqueued' ) ) ){
+            wp_dequeue_style( 'lib-wp-theme-asset' );
+            wp_enqueue_style( 'lib-wp-theme-asset' );
+          }
         }
       }
 
@@ -320,6 +345,7 @@ namespace UsabilityDynamics\Theme {
             'prefix' => '',
             'postfix' => '',
             'type' => 'style', // style, image
+            'important' => true, // must default to true for backwards compatibility
           );
           switch( $i[ 'control' ] ) {
             case 'image':
@@ -347,6 +373,11 @@ namespace UsabilityDynamics\Theme {
               }
               break;
           }
+          
+          /** Add on the important rule */
+          if( isset( $i[ 'important' ] ) ){
+            $css[ 'important' ] = (bool) $i[ 'important' ]; 
+          }
 
           $i[ 'css' ] = $css;
 
@@ -369,6 +400,7 @@ namespace UsabilityDynamics\Theme {
        * @param string $mod_name The name of the 'theme_mod' option to fetch
        * @param string $prefix Optional. Anything that needs to be output before the CSS property
        * @param string $postfix Optional. Anything that needs to be output after the CSS property
+       * @param bool $important Whether or not to show the !important tag
        * @param bool $echo Optional. Whether to print directly to the page (default: true).
        * @return string Returns a single line of CSS with selectors and a property.
        */
@@ -378,15 +410,16 @@ namespace UsabilityDynamics\Theme {
           'style' => '',
           'mod_name' => '',
           'prefix' => '',
-          'postfix' => '',
+          'postfix' => ''
         ) ) );
         $return = '';
         $mod = get_theme_mod( $mod_name );
         if ( ! empty( $mod ) ) {
-           $return = sprintf('%s { %s:%s !important; }',
+           $return = sprintf( '%s { %s: %s%s; }' . "\r\n",
               $selector,
               $style,
-              $prefix.$mod.$postfix
+              $prefix.$mod.$postfix,
+              $important ? ' !important' : ''
            );
         }
         return $return;
