@@ -267,6 +267,11 @@ namespace UsabilityDynamics\Theme {
           'priority' => ( !empty( $i[ 'priority' ] ) ? $i[ 'priority' ] : 999 ),
         );
         switch ( $i[ 'control' ] ) {
+          case 'text':
+          case 'font':
+          case 'font-family':
+            $wp_customize->add_control( new \WP_Customize_Control( $wp_customize, $i[ 'key' ], $control_args ) );
+            break;
           case 'image':
           case 'background-image':
             $wp_customize->add_control( new \WP_Customize_Image_Control( $wp_customize, $i[ 'key' ], $control_args ) );
@@ -369,6 +374,16 @@ namespace UsabilityDynamics\Theme {
               'important' => true, // must default to true for backwards compatibility
             );
             switch( $i[ 'control' ] ) {
+              case 'text':
+                /** Not sure how to use this yet */
+                continue;
+                break;
+              case 'font':
+                $rule[ 'style' ] = 'font';
+                break;
+              case 'font-family':
+                $rule[ 'style' ] = 'font-family';
+                break;
               case 'image':
                 $rule[ 'type' ] = 'image';
                 break;
