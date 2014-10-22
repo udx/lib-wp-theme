@@ -27,6 +27,7 @@
       "lib/class-carrington.php",
       "lib/class-customizer.php",
       "lib/class-module.php",
+      "lib/class-nav-menu.php",
       "lib/class-requires.php",
       "lib/class-scaffold.php",
       "lib/class-script.php",
