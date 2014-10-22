@@ -89,21 +89,45 @@ namespace UsabilityDynamics\Theme {
        * @return type
        */
       public function update_option_rewrite_rules( $rules ) {
-        return array_unique( array(
-          '^' . $this->get( 'permalink' ) => 'index.php?' . $this->query_vars[0] . '=1',
-        ) + (array)$rules );
+        $rules = array( '^' . $this->get( 'permalink' ) => 'index.php?' . $this->query_vars[0] . '=1' ) + $rules;
+        return $rules;
       }
 
       /**
        * Registers asset with all selected dependencies
        *
+       * @param array $args The arguments
+       * 
+       * @arg array $deps Optional. The dependencies
+       * @arg bool $register Optional. Should we register the script? 
+       * @arg bool $enqueue Optional. Should we enqueue the script?
+       * @arg bool $force Optional. Force this, even if it's already enqueued/registered
+       *
        */
-      public function register_asset() {
+      public function register_asset( $args = array() ) {
+        extract( wp_parse_args( $args, array(
+          'deps' => array(),
+          'register' => true,
+          'enqueue' => true,
+          'force' => false
+        ) ) );
         if( isset( $_REQUEST[ 'customized' ] ) && isset( $_REQUEST[ 'wp_customize' ] ) && $_REQUEST[ 'wp_customize' ] == 'on' ) {
           add_action( 'wp_head', array( $this, 'print_styles' ), 100 );
         } else {
-          $url = $this->get_asset_url();
-          wp_enqueue_style( 'lib-wp-theme-asset', $url, array(), $this->get( 'version' ) );
+          if( ( $enqueue || $register ) && ( (bool) $force || !wp_style_is( 'lib-wp-theme-asset', 'registered' ) ) ){
+            /** Make sure we have good deps */
+            if( !is_array( $deps ) ){
+              $deps = array();
+            }
+            /** Ungegister the style */
+            wp_deregister_style( 'lib-wp-theme-asset' );
+            /** Reregister the style */
+            wp_register_style( 'lib-wp-theme-asset', $this->get_asset_url(), $deps, $this->get( 'version' ) );
+          }
+          if( $enqueue && ( (bool) $force || !wp_style_is( 'lib-wp-theme-asset', 'enqueued' ) ) ){
+            wp_dequeue_style( 'lib-wp-theme-asset' );
+            wp_enqueue_style( 'lib-wp-theme-asset' );
+          }
         }
       }
 
@@ -155,8 +179,12 @@ namespace UsabilityDynamics\Theme {
       public function get_asset_data() {
         $data = array();
         foreach( (array)$this->get( 'settings' ) as $setting ) {
-          if( !empty( $setting[ 'css' ] ) && $setting[ 'css' ][ 'style' ] && $style = $this->generate_css( $setting[ 'css' ] ) ) {
-            $data[ $setting[ 'key' ] ] = $style;
+          if( is_array( $setting[ 'css' ] ) && count( $setting[ 'css' ] ) ){
+            foreach( $setting[ 'css' ] as $rule ){
+              if( !empty( $rule ) && $rule[ 'style' ] && $style = $this->generate_css( $rule ) ) {
+                $data[ $setting[ 'key' ] . '-' . $rule[ 'style' ] ] = $style;
+              }
+            }
           }
         }
         return $data;
@@ -168,6 +196,11 @@ namespace UsabilityDynamics\Theme {
        */
       public function get_asset_url() {
         global $wp_rewrite;
+
+        /** If we don't have any rules, get them */
+        if( $wp_rewrite->rules === null ){
+          $wp_rewrite->wp_rewrite_rules();
+        }
 
         $url = home_url() . '?' . $this->query_vars[0] . '=1';
         switch( true ) {
@@ -214,7 +247,6 @@ namespace UsabilityDynamics\Theme {
        *
        */
       public function register_instance( $wp_customize, $i ) {
-
         //** Add Section if it has not been added yet. */
         $sections = $this->get( 'sections' );
         if( !$wp_customize->get_section( $section ) ) {
@@ -236,8 +268,14 @@ namespace UsabilityDynamics\Theme {
           'label'    => ( !empty( $i[ 'label' ] ) ? $i[ 'label' ] : $i[ 'key' ] ),
           'section'  => $i[ 'section' ],
           'settings' => $i[ 'key' ],
+          'priority' => ( !empty( $i[ 'priority' ] ) ? $i[ 'priority' ] : 999 ),
         );
         switch ( $i[ 'control' ] ) {
+          case 'text':
+          case 'font':
+          case 'font-family':
+            $wp_customize->add_control( new \WP_Customize_Control( $wp_customize, $i[ 'key' ], $control_args ) );
+            break;
           case 'image':
           case 'background-image':
             $wp_customize->add_control( new \WP_Customize_Image_Control( $wp_customize, $i[ 'key' ], $control_args ) );
@@ -291,6 +329,7 @@ namespace UsabilityDynamics\Theme {
           'section' => false,
           'control' => false, // values: 'background-image', 'color', 'background-color', 'border-color', 'image'
           'selector' => false,
+          'extra_controls' => false
         ) );
 
         try {
@@ -311,44 +350,81 @@ namespace UsabilityDynamics\Theme {
           if( empty( $i[ 'selector' ] ) ) {
             throw new \Exception( "Selector is undefined." );
           }
-
-          //** Add CSS rules */
-          $css = array(
-            'mod_name' => $i[ 'key' ],
-            'selector' => $i[ 'selector' ],
-            'style' => false,
-            'prefix' => '',
-            'postfix' => '',
-            'type' => 'style', // style, image
-          );
-          switch( $i[ 'control' ] ) {
-            case 'image':
-              $css[ 'type' ] = 'image';
-              break;
-            case 'background-image':
-              $css[ 'style' ] = 'background-image';
-              $css[ 'prefix' ] = 'url(';
-              $css[ 'postfix' ] = ')';
-              break;
-            case 'color':
-              $css[ 'style' ] = 'color';
-              break;
-            case 'background-color':
-              $css[ 'style' ] = 'background-color';
-              break;
-            case 'border-color':
-              $css[ 'style' ] = 'border-color';
-              break;
-            default:
-              //** Custom CSS rules must be added using the hook below. */
-              $css = apply_filters( "lib-wp-theme::customizer::css::{$i[ 'control' ]}", $css, $i );
-              if( empty( $css[ 'style' ] ) ) {
-                throw new \Exception( "CSS rules are incorrect. Check control '{$i[ 'control' ]}'" );
-              }
-              break;
+          
+          /** Setup the thing we're looping */
+          $to_parse = array( $i );
+          /** Now see if we have any extra items to parse */
+          if( is_array( $i[ 'extra_controls' ] ) && count( $i[ 'extra_controls' ] ) ){
+            $to_add = $i;
+            foreach( $i[ 'extra_controls' ] as $control => $selector ){
+              $to_add[ 'control' ] = $control;
+              $to_add[ 'selector' ] = $selector;
+              $to_parse[] = $to_add;
+            }
           }
-
+          
+          /** Setup what we're returning */
+          $css = array();
+          
+          foreach( $to_parse as $i ){
+            //** Add CSS rules */
+            $rule = array(
+              'mod_name' => $i[ 'key' ],
+              'selector' => $i[ 'selector' ],
+              'style' => false,
+              'prefix' => '',
+              'postfix' => '',
+              'type' => 'style', // style, image
+              'important' => true, // must default to true for backwards compatibility
+            );
+            switch( $i[ 'control' ] ) {
+              case 'text':
+                /** Not sure how to use this yet */
+                continue;
+                break;
+              case 'font':
+                $rule[ 'style' ] = 'font';
+                break;
+              case 'font-family':
+                $rule[ 'style' ] = 'font-family';
+                break;
+              case 'image':
+                $rule[ 'type' ] = 'image';
+                break;
+              case 'background-image':
+                $rule[ 'style' ] = 'background-image';
+                $rule[ 'prefix' ] = 'url(';
+                $rule[ 'postfix' ] = ')';
+                break;
+              case 'color':
+                $rule[ 'style' ] = 'color';
+                break;
+              case 'background-color':
+                $rule[ 'style' ] = 'background-color';
+                break;
+              case 'border-color':
+                $rule[ 'style' ] = 'border-color';
+                break;
+              default:
+                //** Custom CSS rules must be added using the hook below. */
+                $rule = apply_filters( "lib-wp-theme::customizer::css::{$i[ 'control' ]}", $css, $i );
+                if( empty( $rule[ 'style' ] ) ) {
+                  throw new \Exception( "CSS rules are incorrect. Check control '{$i[ 'control' ]}'" );
+                }
+                break;
+            }
+            
+            /** Add on the important rule */
+            if( isset( $i[ 'important' ] ) ){
+              $rule[ 'important' ] = (bool) $i[ 'important' ]; 
+            }
+            /** Add it onto the css */
+            $css[] = $rule;
+          }
+          
+          /** Return it */
           $i[ 'css' ] = $css;
+          return $i;
 
         } catch ( \Exception $e ) {
           $i = false;
@@ -369,6 +445,7 @@ namespace UsabilityDynamics\Theme {
        * @param string $mod_name The name of the 'theme_mod' option to fetch
        * @param string $prefix Optional. Anything that needs to be output before the CSS property
        * @param string $postfix Optional. Anything that needs to be output after the CSS property
+       * @param bool $important Whether or not to show the !important tag
        * @param bool $echo Optional. Whether to print directly to the page (default: true).
        * @return string Returns a single line of CSS with selectors and a property.
        */
@@ -378,15 +455,24 @@ namespace UsabilityDynamics\Theme {
           'style' => '',
           'mod_name' => '',
           'prefix' => '',
-          'postfix' => '',
+          'postfix' => ''
         ) ) );
         $return = '';
         $mod = get_theme_mod( $mod_name );
+
+        
+        /** If the selector is an array, we're going to combine it first */
+        if( is_array( $selector ) ){
+          $selector = implode( ",\r\n", $selector );
+        }
+        
+        
         if ( ! empty( $mod ) ) {
-           $return = sprintf('%s { %s:%s !important; }',
+           $return = sprintf( '%s { %s: %s%s; }' . "\r\n",
               $selector,
               $style,
-              $prefix.$mod.$postfix
+              $prefix.$mod.$postfix,
+              $important ? ' !important' : ''
            );
         }
         return $return;
