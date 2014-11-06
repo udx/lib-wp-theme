@@ -77,8 +77,10 @@ namespace UsabilityDynamics\Theme {
         $this->module_directories = array_merge( array( __DIR__ . '/modules' ), (array) $args->module_directories );
         $this->row_directories    = array_merge( array( __DIR__ . '/rows' ), (array) $args->row_directories );
 
-        if( !is_file( $this->path = dirname( dirname( __DIR__ ) ) . '/lib-carrington/lib/carrington-build.php' ) ) {
-          return false;
+        if( !is_file( $this->path = dirname( dirname( dirname( __DIR__ ) ) ) . '/lib-carrington/lib/carrington-build.php' ) ) {
+          if( !is_file( $this->path = dirname( dirname( __DIR__ ) ) . '/lib-carrington/lib/carrington-build.php' ) ) {
+            return false;
+          }
         }
 
         if( !defined( 'CFCT_BUILD_DEBUG_ERROR_LOG' ) ) {
