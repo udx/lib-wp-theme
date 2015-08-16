@@ -28,11 +28,16 @@
    */
   function updateStyles( c, style ) {
     // Oue dynamically generated style element
-    var v = '';
-    if( style && style.length > 0 ) {
-      var v = c.selector + '{ ' + c.style + ':' + c.prefix + style + c.postfix + ' !important; }';
+    if ( c && c.length > 0 ) {
+      var v = '';
+      var mod_name = c[0].mod_name;
+      if( style && style.length > 0 ) {
+        for ( var i in c ) {
+          v += c[ i ].selector + ' { ' + c[ i ].style + ':' + c[ i ].prefix + style + c[ i ].postfix + ' !important; } ';
+        }
+      }
+      $( 'head #lib_wp_theme_customizer_' + mod_name ).text( v );
     }
-    $( 'head #lib_wp_theme_customizer_' + c.mod_name ).text( v );
     
   }
   
@@ -43,8 +48,12 @@
    */
   function updateImage( c, src ) {
     // Oue dynamically generated style element
-    if( src && src.length > 0 && $( c.selector ).length > 0 ) {
-      $( c.selector ).attr( 'src', src );
+    if( src && src.length > 0 ) {
+      for ( var i in c ) {
+        if ( c[ i ].selector.length > 0 ) {
+          $( c[ i ].selector ).attr( 'src', src );
+        }
+      }
     }
   }
   

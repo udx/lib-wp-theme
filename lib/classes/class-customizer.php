@@ -249,7 +249,7 @@ namespace UsabilityDynamics\Theme {
       public function register_instance( $wp_customize, $i ) {
         //** Add Section if it has not been added yet. */
         $sections = $this->get( 'sections' );
-        if( !$wp_customize->get_section( $section ) ) {
+        if( !$wp_customize->get_section( $i[ 'section' ] ) ) {
           $section = wp_parse_args( $sections[ $i[ 'section' ] ], array(
             'title' => __( 'No Name' ),
             'priority' => 100,
