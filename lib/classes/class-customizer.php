@@ -297,11 +297,28 @@ namespace UsabilityDynamics\Theme {
        */
       public function admin_scripts() {
         if ( !wp_script_is( 'lib-wp-theme-customizer', 'enqueued' ) ) {
-          wp_enqueue_script( 'lib-wp-theme-customizer', Utility::path( 'scripts/udx.wp.customizer.js', 'url' ), array( 'jquery', 'customize-preview' ), $this->get( 'version' ), true );
+          wp_enqueue_script( 'lib-wp-theme-customizer', $this->get_url( 'scripts/udx.wp.customizer.js' ), array( 'jquery', 'customize-preview' ), $this->get( 'version' ), true );
           wp_localize_script( 'lib-wp-theme-customizer', '_lib_wp_theme_customizer', array(
             'settings' => $this->get( 'settings' ),
           ) );
         }
+      }
+
+      private function get_url( $shortpath = '' ) {
+        $path = wp_normalize_path( dirname( __FILE__ ) );
+        $url = '';
+        if ( strpos( $path, get_template_directory() ) !== false ) {
+          $url = str_replace( get_template_directory(), get_template_directory_uri(), $path );
+        } else {
+          $url = str_replace( get_stylesheet_directory(), get_stylesheet_directory_uri(), $path );
+        }
+
+        $url = explode( '/lib/', $url );
+        $url = $url[0];
+
+        $url = trailingslashit( $url );
+
+        return $url . $shortpath;
       }
 
       /**
