@@ -25,10 +25,6 @@ namespace UsabilityDynamics\Theme {
         'theme_custom_asset'
       );
 
-      public $plugin_dir = NULL;
-
-      public $plugin_url = NULL;
-
       public $args = array();
 
       public $settings = array();
@@ -58,9 +54,6 @@ namespace UsabilityDynamics\Theme {
         $this->args[ 'settings' ] = $settings;
         
         //echo "<pre>"; print_r( $this->args[ 'settings' ] ); echo "</pre>"; die();
-
-        $this->plugin_dir = plugin_dir_path( dirname( dirname( __FILE__ ) ) );
-        $this->plugin_url = plugin_dir_url( dirname( dirname( __FILE__ ) ) );
 
         //** rewrite and respond */
         add_action( 'query_vars', array( &$this, 'query_vars' ) );
@@ -304,7 +297,7 @@ namespace UsabilityDynamics\Theme {
        */
       public function admin_scripts() {
         if ( !wp_script_is( 'lib-wp-theme-customizer', 'enqueued' ) ) {
-          wp_enqueue_script( 'lib-wp-theme-customizer', $this->plugin_url . 'scripts/udx.wp.customizer.js', array( 'jquery', 'customize-preview' ), $this->get( 'version' ), true );
+          wp_enqueue_script( 'lib-wp-theme-customizer', Utility::path( 'scripts/udx.wp.customizer.js', 'url' ), array( 'jquery', 'customize-preview' ), $this->get( 'version' ), true );
           wp_localize_script( 'lib-wp-theme-customizer', '_lib_wp_theme_customizer', array(
             'settings' => $this->get( 'settings' ),
           ) );

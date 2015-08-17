@@ -17,7 +17,7 @@
     "usabilitydynamics/lib-api": "~0.5",
     "usabilitydynamics/lib-settings": "~0.2",
     "usabilitydynamics/lib-utility": "~0.3",
-    "usabilitydynamics/lib-ui": "~0.3",
+    "usabilitydynamics/lib-ui": "~0.3.4",
     "UsabilityDynamics/lib-model": "~0.3",
     "UsabilityDynamics/lib-requires": "~3.1"
   },
