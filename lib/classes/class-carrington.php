@@ -74,8 +74,8 @@ namespace UsabilityDynamics\Theme {
 
         $this->post_types = array_merge( array( 'post', 'page' ), (array) $args->post_types );
 
-        $this->module_directories = array_merge( array( __DIR__ . '/modules' ), (array) $args->module_directories );
-        $this->row_directories    = array_merge( array( __DIR__ . '/rows' ), (array) $args->row_directories );
+        $this->module_directories = array_merge( array( dirname( __DIR__ ) . '/modules' ), (array) $args->module_directories );
+        $this->row_directories    = array_merge( array( dirname( __DIR__ ) . '/rows' ), (array) $args->row_directories );
 
         if( !is_file( $this->path = dirname( dirname( dirname( __DIR__ ) ) ) . '/lib-carrington/lib/carrington-build.php' ) ) {
           if( !is_file( $this->path = dirname( dirname( __DIR__ ) ) . '/lib-carrington/lib/carrington-build.php' ) ) {

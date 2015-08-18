@@ -110,8 +110,8 @@ namespace UsabilityDynamics\Theme {
           )
         ));
 
-        if( is_dir( __DIR__ . '/modules' ) ) {
-          $this->modules( __DIR__ . '/modules' );
+        if( is_dir( dirname( __DIR__ ) . '/modules' ) ) {
+          $this->modules( dirname( __DIR__ ) . '/modules' );
         }
 
         // Set Instance Settings.
