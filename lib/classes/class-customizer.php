@@ -280,7 +280,11 @@ namespace UsabilityDynamics\Theme {
             break;
           default:
             //** Custom Control must be added using the hook below. */
-            do_action( "lib-wp-theme::customizer::control::{$i[ 'control' ]}",  $i );
+            if ( has_action( "lib-wp-theme::customizer::control::{$i[ 'control' ]}" ) ) {
+              do_action( "lib-wp-theme::customizer::control::{$i[ 'control' ]}",  $i );
+            } else {
+              $wp_customize->add_control( new \WP_Customize_Control( $wp_customize, $i[ 'key' ], $control_args ) );
+            }
             break;
         }
 
@@ -416,8 +420,9 @@ namespace UsabilityDynamics\Theme {
                 $rule[ 'style' ] = 'border-color';
                 break;
               default:
+                $rule[ 'style' ] = $i[ 'control' ];
                 //** Custom CSS rules must be added using the hook below. */
-                $rule = apply_filters( "lib-wp-theme::customizer::css::{$i[ 'control' ]}", $css, $i );
+                $rule = apply_filters( "lib-wp-theme::customizer::css::{$i[ 'control' ]}", $rule, $i );
                 if( empty( $rule[ 'style' ] ) ) {
                   throw new \Exception( "CSS rules are incorrect. Check control '{$i[ 'control' ]}'" );
                 }
