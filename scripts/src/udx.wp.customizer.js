@@ -35,6 +35,9 @@
         for ( var i in c ) {
           v += c[ i ].selector + ' { ' + c[ i ].style + ':' + c[ i ].prefix + style + c[ i ].postfix + ' !important; } ';
         }
+        if ( typeof c[0].media_query === 'string' && c[0].media_query.trim() !== '' ) {
+          v = '@media ' + c[0].media_query + ' { ' + v + ' } ';
+        }
       }
       $( 'head #lib_wp_theme_customizer_' + mod_name ).text( v );
     }

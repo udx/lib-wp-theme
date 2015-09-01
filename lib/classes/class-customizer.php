@@ -343,6 +343,8 @@ namespace UsabilityDynamics\Theme {
           'section' => false,
           'control' => false, // values: 'background-image', 'color', 'background-color', 'border-color', 'image'
           'selector' => false,
+          'min_width' => '',
+          'max_width' => '',
           'extra_controls' => false
         ) );
 
@@ -373,6 +375,8 @@ namespace UsabilityDynamics\Theme {
             foreach( $i[ 'extra_controls' ] as $control => $selector ){
               $to_add[ 'control' ] = $control;
               $to_add[ 'selector' ] = $selector;
+              $to_add[ 'min_width' ] = $i[ 'min_width' ];
+              $to_add[ 'max_width' ] = $i[ 'max_width' ];
               $to_parse[] = $to_add;
             }
           }
@@ -382,12 +386,24 @@ namespace UsabilityDynamics\Theme {
           
           foreach( $to_parse as $i ){
             //** Add CSS rules */
+            $media_query = '';
+            if ( ! empty( $i['min_width'] ) || ! empty( $i['max_width'] ) ) {
+              $media_query .= 'only screen and';
+              if ( ! empty( $i['min_width'] ) ) {
+                $media_query .= ' (min-width: ' . $i['min_width'] . ')';
+              }
+              if ( ! empty( $i['max_width'] ) ) {
+                $media_query .= ' (max-width: ' . $i['max_width'] . ')';
+              }
+            }
+
             $rule = array(
               'mod_name' => $i[ 'key' ],
               'selector' => $i[ 'selector' ],
               'style' => false,
               'prefix' => '',
               'postfix' => '',
+              'media_query' => $media_query,
               'type' => 'style', // style, image
               'important' => true, // must default to true for backwards compatibility
             );
@@ -470,7 +486,8 @@ namespace UsabilityDynamics\Theme {
           'style' => '',
           'mod_name' => '',
           'prefix' => '',
-          'postfix' => ''
+          'postfix' => '',
+          'media_query' => '',
         ) ) );
         $return = '';
         $mod = get_theme_mod( $mod_name );
@@ -483,12 +500,16 @@ namespace UsabilityDynamics\Theme {
         
         
         if ( ! empty( $mod ) ) {
-           $return = sprintf( '%s { %s: %s%s; }' . "\r\n",
-              $selector,
-              $style,
-              $prefix.$mod.$postfix,
-              $important ? ' !important' : ''
-           );
+          $return = sprintf( '%s { %s: %s%s; }' . "\r\n",
+            $selector,
+            $style,
+            $prefix.$mod.$postfix,
+            $important ? ' !important' : ''
+          );
+
+          if ( is_string( $media_query ) && ! empty( trim( $media_query ) ) ) {
+            $return = '@media ' . $media_query . ' { ' . $return . ' } ';
+          }
         }
         return $return;
       }
