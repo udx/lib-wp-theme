@@ -388,12 +388,12 @@ namespace UsabilityDynamics\Theme {
             //** Add CSS rules */
             $media_query = '';
             if ( ! empty( $i['min_width'] ) || ! empty( $i['max_width'] ) ) {
-              $media_query .= 'only screen and';
+              $media_query .= 'only screen';
               if ( ! empty( $i['min_width'] ) ) {
-                $media_query .= ' (min-width: ' . $i['min_width'] . ')';
+                $media_query .= ' and (min-width: ' . $i['min_width'] . ')';
               }
               if ( ! empty( $i['max_width'] ) ) {
-                $media_query .= ' (max-width: ' . $i['max_width'] . ')';
+                $media_query .= ' and (max-width: ' . $i['max_width'] . ')';
               }
             }
 
