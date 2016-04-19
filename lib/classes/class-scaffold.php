@@ -1091,10 +1091,13 @@ namespace UsabilityDynamics\Theme {
           'assets/models/([^/]+)(.json|.js)?'                  => 'index.php?is_asset=1&asset_type=model&asset_slug=$matches[1]'
         );
 
-        // Return concatenated rules.
-        $new = array_merge( (array) $new_rules, (array) $rules );
+        // Return concatenated rules, if $rules are set.
+        if( $rules && is_array( $rules ) && count( $rules ) > 0 ) {
+          return array_merge( (array) $new_rules, (array) $rules );
+        }
 
-        return $new;
+        // Original rules are blank, return them. This seems to fix a bug that results in original rules being blank.
+        return $rules;
 
       }
 
