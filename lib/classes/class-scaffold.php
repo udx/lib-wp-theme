@@ -127,7 +127,7 @@ namespace UsabilityDynamics\Theme {
         ));
 
         add_filter( 'admin_menu', array( $this, 'admin_menu' ) );
-        add_filter( 'pre_update_option_rewrite_rules', array( $this, '_update_option_rewrite_rules' ), 1 );
+        add_filter( 'update_option_rewrite_rules', array( $this, '_update_option_rewrite_rules' ), 1 );
         add_action( 'query_vars', array( $this, '_query_vars' ) );
         add_action( 'template_redirect', array( $this, '_redirect' ), 5 );
         add_filter( 'intermediate_image_sizes_advanced', array( $this, '_image_sizes' ) );

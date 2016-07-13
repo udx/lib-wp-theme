@@ -52,12 +52,12 @@ namespace UsabilityDynamics\Theme {
           }
         }
         $this->args[ 'settings' ] = $settings;
-        
+
         //echo "<pre>"; print_r( $this->args[ 'settings' ] ); echo "</pre>"; die();
 
         //** rewrite and respond */
         add_action( 'query_vars', array( &$this, 'query_vars' ) );
-        add_filter( 'pre_update_option_rewrite_rules', array( &$this, 'update_option_rewrite_rules' ), 1 );
+        add_filter( 'update_option_rewrite_rules', array( &$this, 'update_option_rewrite_rules' ), 1 );
         add_filter( 'template_include', array( &$this, 'return_asset' ), 1, 1 );
         add_action( 'wp_enqueue_scripts', array( &$this, 'register_asset' ), 100 );
         //** Customizer addons */
@@ -82,7 +82,8 @@ namespace UsabilityDynamics\Theme {
        * @return type
        */
       public function update_option_rewrite_rules( $rules ) {
-        $rules = array( '^' . $this->get( 'permalink' ) => 'index.php?' . $this->query_vars[0] . '=1' ) + $rules;
+        $permalink = $this->get( 'permalink' );
+        $rules = array_merge( array( '^' . $permalink => 'index.php?' . $this->query_vars[0] . '=1' ), $rules);
         return $rules;
       }
 
@@ -366,7 +367,7 @@ namespace UsabilityDynamics\Theme {
           if( empty( $i[ 'selector' ] ) ) {
             throw new \Exception( "Selector is undefined." );
           }
-          
+
           /** Setup the thing we're looping */
           $to_parse = array( $i );
           /** Now see if we have any extra items to parse */
@@ -380,10 +381,10 @@ namespace UsabilityDynamics\Theme {
               $to_parse[] = $to_add;
             }
           }
-          
+
           /** Setup what we're returning */
           $css = array();
-          
+
           foreach( $to_parse as $i ){
             //** Add CSS rules */
             $media_query = '';
@@ -444,15 +445,15 @@ namespace UsabilityDynamics\Theme {
                 }
                 break;
             }
-            
+
             /** Add on the important rule */
             if( isset( $i[ 'important' ] ) ){
-              $rule[ 'important' ] = (bool) $i[ 'important' ]; 
+              $rule[ 'important' ] = (bool) $i[ 'important' ];
             }
             /** Add it onto the css */
             $css[] = $rule;
           }
-          
+
           /** Return it */
           $i[ 'css' ] = $css;
           return $i;
@@ -492,13 +493,13 @@ namespace UsabilityDynamics\Theme {
         $return = '';
         $mod = get_theme_mod( $mod_name );
 
-        
+
         /** If the selector is an array, we're going to combine it first */
         if( is_array( $selector ) ){
           $selector = implode( ",\r\n", $selector );
         }
-        
-        
+
+
         if ( ! empty( $mod ) ) {
           $return = sprintf( '%s { %s: %s%s; }' . "\r\n",
             $selector,
