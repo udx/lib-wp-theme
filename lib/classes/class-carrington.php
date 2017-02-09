@@ -478,15 +478,15 @@ namespace UsabilityDynamics\Theme {
       private function bootstrap() {
 
         add_filter( 'cfct-block-c6-12-classes', function ( $classes ) {
-          return array_merge( array( 'column', 'col-md-4', 'col-sm-4', 'col-lg-4' ), $classes );
+          return array_merge( array( 'column', 'col-md-12', 'col-sm-12', 'col-lg-4' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-34-classes', function ( $classes ) {
-          return array_merge( array( 'column', 'col-md-4', 'col-sm-4', 'col-lg-4' ), $classes );
+          return array_merge( array( 'column', 'col-md-12', 'col-sm-12', 'col-lg-4' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-56-classes', function ( $classes ) {
-          return array_merge( array( 'column', 'col-md-4', 'col-sm-6', 'col-lg-4' ), $classes );
+          return array_merge( array( 'column', 'col-md-12', 'col-sm-12', 'col-lg-4' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-123-classes', function ( $classes ) {
@@ -498,11 +498,11 @@ namespace UsabilityDynamics\Theme {
         } );
 
         add_filter( 'cfct-block-c4-12-classes', function ( $classes ) {
-          return array_merge( array( 'column', 'col-md-6', 'col-sm-6', 'col-lg-6' ), $classes );
+          return array_merge( array( 'column', 'col-md-6', 'col-sm-12', 'col-lg-6' ), $classes );
         } );
 
         add_filter( 'cfct-block-c4-34-classes', function ( $classes ) {
-          return array_merge( array( 'column', 'col-md-6', 'col-sm-6', 'col-lg-6' ), $classes );
+          return array_merge( array( 'column', 'col-md-6', 'col-sm-12', 'col-lg-6' ), $classes );
         } );
 
         add_filter( 'cfct-block-c6-1234-classes', function ( $classes ) {
@@ -533,7 +533,7 @@ namespace UsabilityDynamics\Theme {
         } );
 
       }
-
+      
       /**
        * Register Module
        *
