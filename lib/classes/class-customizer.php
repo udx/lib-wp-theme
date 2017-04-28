@@ -57,7 +57,7 @@ namespace UsabilityDynamics\Theme {
 
         //** rewrite and respond */
         add_action( 'query_vars', array( &$this, 'query_vars' ) );
-        add_filter( 'update_option_rewrite_rules', array( &$this, 'update_option_rewrite_rules' ), 1 );
+        add_filter( 'generate_rewrite_rules', array( $this, 'update_option_rewrite_rules' ) );
         add_filter( 'template_include', array( &$this, 'return_asset' ), 1, 1 );
         add_action( 'wp_enqueue_scripts', array( &$this, 'register_asset' ), 100 );
         //** Customizer addons */
@@ -78,13 +78,15 @@ namespace UsabilityDynamics\Theme {
       /**
        * Dynamic Rules
        *
-       * @param type $current
-       * @return type
+       * @param $wp_rewrite
+       * @return mixed
        */
-      public function update_option_rewrite_rules( $rules ) {
+      public function update_option_rewrite_rules( $wp_rewrite ) {
+
         $permalink = $this->get( 'permalink' );
-        $rules = array_merge( array( '^' . $permalink => 'index.php?' . $this->query_vars[0] . '=1' ), $rules);
-        return $rules;
+        $wp_rewrite->rules[ '^' . $permalink ] = 'index.php?' . $this->query_vars[0] . '=1';
+
+        return $wp_rewrite->rules;
       }
 
       /**
