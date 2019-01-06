@@ -650,7 +650,18 @@ namespace UsabilityDynamics\Theme {
       public static function add_module_style( $class = false, $image_path = '', $type = 'general' ) {
 
         if( $image_path && $class ) {
-          add_filter( 'udx:theme:carrington:styles', create_function( '$options, $type="' . $type . '", $image_path="' . $image_path . '", $class="' . $class . '" ', '  $options[$type][$class] = $image_path;  return $options; ' ) );
+          add_filter( 'udx:theme:carrington:styles', function($options, $_type = null, $_image_path = null, $_class = null ) use($type, $image_path, $class){
+            // Pre ES2015 JavaScript style default parameters.
+            if($_type == null)
+              $_type = $type;
+            if($_image_path == null)
+              $_image_path = $image_path;
+            if($_class == null)
+              $_class = $class;
+
+            $options[$_type][$_class] = $_image_path; 
+            return $options;
+          } );
         }
 
       }
