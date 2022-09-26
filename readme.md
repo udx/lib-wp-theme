@@ -26,4 +26,3 @@ class MyTheme extends \UsabilityDynamics\Theme\Scaffold {
 
 }
 ```
-
