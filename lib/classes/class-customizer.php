@@ -413,7 +413,6 @@ namespace UsabilityDynamics\Theme {
             switch( $i[ 'control' ] ) {
               case 'text':
                 /** Not sure how to use this yet */
-                continue;
                 break;
               case 'font':
                 $rule[ 'style' ] = 'font';
