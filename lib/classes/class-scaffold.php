@@ -1172,23 +1172,23 @@ namespace UsabilityDynamics\Theme {
         $wp_query->is_asset      = true;
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'script' ) {
-          $this->_serve_public( 'script', get_query_var( 'asset_slug' ), $_data );
+          $this->_serve_public( get_query_var( 'asset_slug' ), 'script', $_data );
         }
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'font' ) {
-          $this->_serve_public( 'font', get_query_var( 'asset_slug' ), $_data );
+          $this->_serve_public( get_query_var( 'asset_slug' ), 'font', $_data );
         }
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'image' ) {
-          $this->_serve_public( 'image', get_query_var( 'asset_slug' ), $_data );
+          $this->_serve_public( get_query_var( 'asset_slug' ), 'image', $_data );
         }
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'style' ) {
-          $this->_serve_public( 'style', get_query_var( 'asset_slug' ), $_data );
+          $this->_serve_public( get_query_var( 'asset_slug' ), 'style', $_data );
         }
 
         if( isset( $_data ) && get_query_var( 'asset_type' ) === 'model' ) {
-          $this->_serve_public( 'model', get_query_var( 'asset_slug' ), $_data );
+          $this->_serve_public( get_query_var( 'asset_slug' ), 'model', $_data );
         }
 
         // Stop Request. (willl break wp-amd);
@@ -1212,7 +1212,7 @@ namespace UsabilityDynamics\Theme {
        * @param        $name
        * @param string $data
        */
-      private function _serve_public( $type = '', $name, $data = '' ) {
+      private function _serve_public( $name, $type = '', $data = '' ) {
 
         // Configure Headers.
         $headers = apply_filters( 'udx:theme:public:' . $type . 'headers', array(
